@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard tempi di attesa – Alto Adige{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+  <div class="col">
+    <h2 class="fw-bold mb-1">
+      <i class="bi bi-calendar2-heart me-2 text-success"></i>Tempi di attesa sanitari
+    </h2>
+    <p class="text-muted mb-0">
+      Dati aggiornati dall'<a href="https://data.civis.bz.it/it/dataset/southtyrolean-healthservices-waitingtimes" target="_blank">opendata dell'Alto Adige / Südtirol</a>.
+      Seleziona una prestazione per vedere le prime date disponibili.
+    </p>
+    <div class="alert alert-warning mt-3 mb-0 py-2 small">
+      <i class="bi bi-exclamation-triangle me-1"></i>
+      Progetto amatoriale senza garanzie di correttezza o continuità del servizio.
+      Per prenotazioni e informazioni certe contatta direttamente l'<a href="https://www.sabes.it" target="_blank" class="alert-link">Azienda Sanitaria dell'Alto Adige</a> (CUP: 0471 100 200).
+      &mdash; <a href="https://github.com/azuki-beans/attese" target="_blank" class="alert-link"><i class="bi bi-github me-1"></i>Codice sorgente</a>
+    </div>
+    {% if last_fetch %}
+    <div class="mt-2 d-flex flex-wrap gap-3">
+      {% if last_fetch.latest_survey_date %}
+      <small class="text-muted">
+        <i class="bi bi-clipboard2-check me-1 text-success"></i>
+        <strong>Ultima rilevazione dati: {{ last_fetch.latest_survey_date|date:"d/m/Y" }}</strong>
+      </small>
+      {% endif %}
+      {% if last_fetch.latest_publish_date %}
+      <small class="text-muted">
+        <i class="bi bi-cloud-arrow-up me-1 text-success"></i>
+        <strong>Ultimo aggiornamento opendata: {{ last_fetch.latest_publish_date|date:"d/m/Y" }}</strong>
+      </small>
+      {% endif %}
+      <small class="text-muted">
+        <i class="bi bi-arrow-repeat me-1 text-success"></i>
+        <strong>Ultimo import: {{ last_fetch.fetched_at|date:"d/m/Y H:i" }}</strong>
+      </small>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% if not has_data %}
+  <div class="alert alert-warning">
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    Nessun dato disponibile. Esegui il comando
+    <code>python manage.py fetch_waitingtimes</code> per importare i dati.
+  </div>
+{% endif %}
+
+<div class="card">
+  <div class="card-header bg-white d-flex align-items-center gap-2">
+    <i class="bi bi-funnel text-success"></i>
+    <span class="fw-semibold">Filtri di ricerca</span>
+  </div>
+  <div class="card-body">
+    <div class="row g-3 align-items-end">
+
+      <!-- Select prestazione -->
+      <div class="col-md-8">
+        <label class="form-label fw-semibold" for="activity-select">
+          <i class="bi bi-clipboard2-pulse me-1"></i>Tipo di prestazione
+        </label>
+        <select id="activity-select"
+                name="activity_code"
+                class="form-select"
+                hx-get="{% url 'filter_partial' %}"
+                hx-target="#filter-area"
+                hx-indicator="#loading-spinner"
+                hx-trigger="change">
+          <option value="">— Seleziona una prestazione —</option>
+          {% for a in activities %}
+            <option value="{{ a.activity_code }}">
+              {{ a.activity_description_it }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Spinner -->
+      <div class="col-md-1 text-center">
+        <div id="loading-spinner" class="htmx-indicator">
+          <div class="spinner-border text-success" role="status" style="width:1.5rem;height:1.5rem;">
+            <span class="visually-hidden">Caricamento...</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Area aggiornata da HTMX quando si cambia la prestazione -->
+<div id="filter-area" class="mt-4">
+  {% if has_data %}
+    <div class="text-center text-muted py-5">
+      <i class="bi bi-arrow-up-circle fs-1 d-block mb-2 text-success opacity-50"></i>
+      Seleziona una prestazione per vedere le date disponibili.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+name: attese
+
+x-common-variables: &common_variables
+  POSTGRES_DB: attese
+  POSTGRES_USER: attese
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  POSTGRES_HOST: db
+  SECRET_KEY: ${SECRET_KEY}
+  DEBUG: 0
+  ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+  SOCIALACCOUNT_ONLY: 1
+  GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+  GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+  EMAIL_BACKEND: smtp
+  EMAIL_HOST: ${EMAIL_HOST}
+  EMAIL_PORT: ${EMAIL_PORT:-587}
+  EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+  EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+  EMAIL_USE_TLS: "True"
+  DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL}
+  SITE_URL: ${SITE_URL}
+  CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS}
+  CELERY_BROKER_URL: redis://redis:6379/0
+
+services:
+  db:
+    image: postgres:18.3
+    volumes:
+      - attese_data:/var/lib/postgresql
+    environment: *common_variables
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U attese"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - local
+
+  redis:
+    image: redis:7-alpine
+    networks:
+      - local
+
+  attese:
+    image: ghcr.io/azuki-beans/attese:main
+    environment: *common_variables
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - local
+      - proxy
+
+  celery:
+    image: ghcr.io/azuki-beans/attese:main
+    command: celery -A config worker -l info
+    environment: *common_variables
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - local
+
+  celery-beat:
+    image: ghcr.io/azuki-beans/attese:main
+    command: celery -A config beat -l info
+    environment: *common_variables
+    depends_on:
+      - celery
+    networks:
+      - local
+
+volumes:
+  attese_data:
+
+networks:
+  local:
+  proxy:
+    external: true
