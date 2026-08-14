@@ -1,0 +1,13 @@
+<label class="form-label fw-semibold">Struttura</label>
+<select name="structure_id"
+        class="form-select"
+        hx-get="{% url 'structure_chart_partial' %}"
+        hx-target="#structure-chart-area"
+        hx-include="[name='activity_code']"
+        hx-indicator="#spinner-struct"
+        hx-trigger="change">
+  <option value="">— Seleziona una struttura —</option>
+  {% for s in structures %}
+    <option value="{{ s.structure__id }}">{{ s.structure__description_it }}</option>
+  {% endfor %}
+</select>

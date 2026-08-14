@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Richiesta di accesso – Tempi di attesa{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-7 col-lg-6">
+    <div class="card mt-4">
+      <div class="card-header bg-white">
+        <h4 class="mb-0">
+          <i class="bi bi-person-lock me-2 text-success"></i>Accesso alla dashboard
+        </h4>
+      </div>
+      <div class="card-body">
+
+        {% if access_request %}
+          {% if access_request.status == "pending" %}
+            <div class="alert alert-warning">
+              <i class="bi bi-hourglass-split me-2"></i>
+              <strong>Richiesta in attesa di approvazione.</strong><br>
+              Hai inviato la tua richiesta il {{ access_request.created_at|date:"d/m/Y" }}.
+              Riceverai una notifica quando l'amministratore la elaborerà.
+            </div>
+            <dl class="row small text-muted">
+              <dt class="col-sm-4">Nome</dt>
+              <dd class="col-sm-8">{{ access_request.full_name }}</dd>
+              {% if access_request.organization %}
+              <dt class="col-sm-4">Ente</dt>
+              <dd class="col-sm-8">{{ access_request.organization }}</dd>
+              {% endif %}
+              <dt class="col-sm-4">Motivazione</dt>
+              <dd class="col-sm-8">{{ access_request.reason }}</dd>
+            </dl>
+          {% elif access_request.status == "rejected" %}
+            <div class="alert alert-danger">
+              <i class="bi bi-x-circle me-2"></i>
+              <strong>Richiesta rifiutata.</strong><br>
+              La tua richiesta di accesso è stata rifiutata dall'amministratore.
+              Contatta l'amministratore per maggiori informazioni.
+            </div>
+          {% endif %}
+
+        {% else %}
+          <p class="text-muted">
+            Sei autenticato con <strong>{{ user.email }}</strong> ma il tuo account non è ancora
+            abilitato ad accedere alla dashboard dei tempi di attesa.<br>
+            Compila il modulo per richiedere l'accesso.
+          </p>
+
+          {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+          {% endif %}
+
+          <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Nome e cognome <span class="text-danger">*</span></label>
+              <input type="text" name="full_name" class="form-control"
+                     value="{{ form_data.full_name|default:'' }}" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Ente / Organizzazione</label>
+              <input type="text" name="organization" class="form-control"
+                     value="{{ form_data.organization|default:'' }}">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Motivazione della richiesta <span class="text-danger">*</span></label>
+              <textarea name="reason" class="form-control" rows="4"
+                        placeholder="Descrivi brevemente perché hai bisogno di accedere a questi dati..." required>{{ form_data.reason|default:'' }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+              <i class="bi bi-send me-1"></i> Invia richiesta di accesso
+            </button>
+          </form>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

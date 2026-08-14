@@ -1,0 +1,89 @@
+{% if records %}
+<div class="card">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <span class="fw-semibold">
+      <i class="bi bi-list-ol me-1 text-success"></i>
+      Date disponibili più vicine
+    </span>
+    <span class="badge bg-secondary">{{ records|length }} risultat{{ records|length|pluralize:"o,i" }}</span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">#</th>
+            <th>Struttura</th>
+            <th>Reparto / Indirizzo</th>
+            <th class="text-center">Giorni di attesa</th>
+            <th class="text-center">Data <b>STIMATA</b> disponibilità</th>
+            <th>Contatto</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in records %}
+            <tr class="{% if r.waiting_days is not None %}{% if r.waiting_days <= 15 %}table-days-low{% elif r.waiting_days <= 30 %}table-days-medium{% else %}table-days-high{% endif %}{% endif %}">
+              <td class="ps-3 text-muted small">{{ forloop.counter }}</td>
+              <td>
+                <strong>{{ r.structure.description_it }}</strong>
+                {% if r.city_it %}
+                  <br><span class="text-muted small">
+                    <i class="bi bi-geo-alt me-1"></i>{{ r.city_it }}
+                  </span>
+                {% endif %}
+              </td>
+              <td class="small text-muted">
+                {% if r.structure.address_name_it %}{{ r.structure.address_name_it }}<br>{% endif %}
+                {% if r.structure.street_it %}{{ r.structure.street_it }}{% if r.structure.zip %}, {{ r.structure.zip }}{% endif %}{% endif %}
+              </td>
+              <td class="text-center">
+                {% if r.waiting_days is not None %}
+                  <span class="fw-bold fs-5">{{ r.waiting_days }}</span>
+                  <span class="text-muted small"> gg</span>
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+              <td class="text-center">
+                {% if r.estimated_date %}
+                  <span class="badge bg-success fs-6 fw-normal">
+                    {{ r.estimated_date|date:"d/m/Y" }}
+                  </span>
+                {% else %}
+                  <span class="text-muted small">N/D</span>
+                {% endif %}
+              </td>
+              <td class="small">
+                {% if r.phone %}
+                  <a href="tel:{{ r.phone }}" class="text-decoration-none">
+                    <i class="bi bi-telephone me-1"></i>{{ r.phone }}
+                  </a>
+                {% endif %}
+                {% if r.info_it %}
+                  <br>
+                  <span class="text-muted fst-italic">{{ r.info_it|truncatechars:80 }}</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card-footer text-muted small">
+    <i class="bi bi-info-circle me-1"></i>
+    La data stimata è calcolata come: data pubblicazione dati + giorni di attesa.
+    Aggiornamento dati: quotidiano.
+    <span class="float-end">
+      Fonte: <a href="https://data.civis.bz.it/it/dataset/southtyrolean-healthservices-waitingtimes"
+               target="_blank" class="text-muted">Open Data Alto Adige – CC Zero</a>
+    </span>
+  </div>
+</div>
+
+{% else %}
+<div class="alert alert-info">
+  <i class="bi bi-search me-2"></i>
+  Nessun dato trovato per i filtri selezionati.
+</div>
+{% endif %}

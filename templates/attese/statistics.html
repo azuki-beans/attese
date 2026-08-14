@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}Statistiche – Tempi di attesa Alto Adige{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<style>
+  .chart-container { position: relative; height: 320px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+  <div class="col">
+    <h2 class="fw-bold mb-1">
+      <i class="bi bi-graph-up-arrow me-2 text-success"></i>Statistiche e variazioni nel tempo
+    </h2>
+    <p class="text-muted mb-0">
+      Andamento dei tempi medi di attesa in base alle pubblicazioni opendata.
+    </p>
+  </div>
+  <div class="col-auto d-flex align-items-center">
+    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i>Torna alla ricerca
+    </a>
+  </div>
+</div>
+
+<!-- 1. Media globale -->
+<div class="card mb-4">
+  <div class="card-header bg-white d-flex align-items-center gap-2">
+    <i class="bi bi-activity text-success"></i>
+    <span class="fw-semibold">Media globale giorni di attesa nel tempo</span>
+  </div>
+  <div class="card-body">
+    {% if global_data != "[]" %}
+    <div class="chart-container">
+      <canvas id="globalChart"></canvas>
+    </div>
+    {% else %}
+    <p class="text-muted text-center py-4">Dati insufficienti per il grafico.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- 2. Media per prestazione -->
+<div class="card mb-4">
+  <div class="card-header bg-white d-flex align-items-center gap-2">
+    <i class="bi bi-clipboard2-pulse text-success"></i>
+    <span class="fw-semibold">Media giorni di attesa per prestazione</span>
+  </div>
+  <div class="card-body">
+    <div class="row g-3 mb-3">
+      <div class="col-md-7">
+        <label class="form-label fw-semibold" for="activity-select-stats">
+          Tipo di prestazione
+        </label>
+        <select id="activity-select-stats"
+                name="activity_code"
+                class="form-select"
+                hx-get="{% url 'activity_chart_partial' %}"
+                hx-target="#activity-chart-area"
+                hx-indicator="#spinner-activity"
+                hx-trigger="change">
+          <option value="">— Seleziona una prestazione —</option>
+          {% for a in activities %}
+            <option value="{{ a.activity_code }}">{{ a.activity_description_it }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto d-flex align-items-end">
+        <div id="spinner-activity" class="htmx-indicator">
+          <div class="spinner-border text-success" role="status" style="width:1.5rem;height:1.5rem;">
+            <span class="visually-hidden">Caricamento...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="activity-chart-area">
+      <p class="text-muted text-center py-3">Seleziona una prestazione per visualizzare il grafico.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 3. Prestazione + struttura -->
+<div class="card mb-4">
+  <div class="card-header bg-white d-flex align-items-center gap-2">
+    <i class="bi bi-hospital text-success"></i>
+    <span class="fw-semibold">Andamento tempo di attesa: prestazione in una struttura</span>
+  </div>
+  <div class="card-body">
+    <div class="row g-3 mb-3">
+      <div class="col-md-5">
+        <label class="form-label fw-semibold" for="activity-select-struct">Prestazione</label>
+        <select id="activity-select-struct"
+                name="activity_code"
+                class="form-select"
+                hx-get="{% url 'structure_picker_partial' %}"
+                hx-target="#structure-select-area"
+                hx-indicator="#spinner-struct"
+                hx-trigger="change">
+          <option value="">— Seleziona —</option>
+          {% for a in activities %}
+            <option value="{{ a.activity_code }}">{{ a.activity_description_it }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-5" id="structure-select-area">
+        <label class="form-label fw-semibold text-muted">Struttura</label>
+        <select class="form-select" disabled><option>— Prima seleziona una prestazione —</option></select>
+      </div>
+      <!-- il partial sostituisce structure-select-area con un select abilitato -->
+      <div class="col-auto d-flex align-items-end">
+        <div id="spinner-struct" class="htmx-indicator">
+          <div class="spinner-border text-success" role="status" style="width:1.5rem;height:1.5rem;">
+            <span class="visually-hidden">Caricamento...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="structure-chart-area">
+      <p class="text-muted text-center py-3">Seleziona prestazione e struttura per visualizzare il grafico.</p>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const BZ_GREEN = '#006b3f';
+
+function makeLineChart(canvasId, labels, data, label) {
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: label,
+        data: data,
+        borderColor: BZ_GREEN,
+        backgroundColor: 'rgba(0,107,63,0.08)',
+        borderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        fill: true,
+        tension: 0.3,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => `${ctx.parsed.y} giorni`
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: false,
+          title: { display: true, text: 'Giorni medi di attesa' },
+          ticks: { precision: 0 }
+        },
+        x: {
+          title: { display: true, text: 'Data pubblicazione opendata' }
+        }
+      }
+    }
+  });
+}
+
+// Grafico globale
+makeLineChart(
+  'globalChart',
+  {{ global_labels|safe }},
+  {{ global_data|safe }},
+  'Media globale giorni di attesa'
+);
+
+// Inizializza grafici iniettati da HTMX
+document.addEventListener('htmx:afterSwap', function(e) {
+  const target = e.detail.target;
+  const canvas = target.querySelector('[data-chart]');
+  if (!canvas) return;
+  makeLineChart(
+    canvas.id,
+    JSON.parse(canvas.dataset.labels),
+    JSON.parse(canvas.dataset.data),
+    canvas.dataset.chartLabel
+  );
+});
+</script>
+{% endblock %}
