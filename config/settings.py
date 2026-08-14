@@ -63,17 +63,27 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("POSTGRES_DB", "attese"),
-        "USER": os.environ.get("POSTGRES_USER", "attese"),
-        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "attese"),
-        "HOST": os.environ.get("POSTGRES_HOST", "db"),
-        "PORT": os.environ.get("POSTGRES_PORT", "5432"),
-        "OPTIONS": {"pool": True},
+if os.environ.get("DATABASE_ENGINE") == "sqlite":
+    # Usato solo sul deploy demo di Cloud Run: SQLite su un volume Cloud Storage,
+    # vedi DEPLOY.md. Il deploy "vero" (locale/server proprio) usa sempre Postgres.
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": os.environ.get("SQLITE_PATH", BASE_DIR / "db.sqlite3"),
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("POSTGRES_DB", "attese"),
+            "USER": os.environ.get("POSTGRES_USER", "attese"),
+            "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "attese"),
+            "HOST": os.environ.get("POSTGRES_HOST", "db"),
+            "PORT": os.environ.get("POSTGRES_PORT", "5432"),
+            "OPTIONS": {"pool": True},
+        }
+    }
 
 AUTH_USER_MODEL = "accounts.CustomUser"
 
