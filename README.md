@@ -6,6 +6,10 @@ strutture hanno le date più vicine, ordinate per giorni di attesa.
 
 ![Dashboard di Attese con i risultati di una ricerca](docs/screenshots/dashboard.jpg)
 
+Se volete saltare direttamente ai dati senza dettagli tecnici:
+
+https://attese.azukibeans.dev/
+
 ## Cosa fa
 
 - Scarica automaticamente i dati opendata della Provincia di Bolzano
