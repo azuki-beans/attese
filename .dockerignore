@@ -1,0 +1,39 @@
+# Decide cosa entra nell'immagine (COPY . .): ogni esclusione è definitiva,
+# nell'immagine serve solo il codice dell'app + locale + static sorgenti.
+
+# VCS / CI
+.git
+.github
+.gitignore
+.pre-commit-config.yaml
+.secrets.baseline
+
+# IDE / ambienti locali
+.idea
+.vscode
+.venv
+venv
+.DS_Store
+
+# Cache e artefatti
+**/__pycache__
+**/*.pyc
+.ruff_cache
+staticfiles
+celerybeat-schedule*
+
+# Dati e log locali
+*.sqlite3
+*.sql
+*.log
+*.zip
+
+# Documentazione e test
+*.md
+docs
+tests
+
+# Stack compose e configurazione (i segreti arrivano a runtime)
+stacks
+.env
+.env.*
