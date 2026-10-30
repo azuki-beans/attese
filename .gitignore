@@ -226,3 +226,6 @@ staticfiles/
 *.sqlite3
 .DS_Store
 .secrets.baseline
+
+# Stack compose locali/prod: non committati
+stacks/

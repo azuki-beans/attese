@@ -26,9 +26,9 @@
               <td class="ps-3 text-muted small">{{ forloop.counter }}</td>
               <td>
                 <strong>{{ r.structure.description_it }}</strong>
-                {% if r.city_it %}
+                {% if r.structure.city_it %}
                   <br><span class="text-muted small">
-                    <i class="bi bi-geo-alt me-1"></i>{{ r.city_it }}
+                    <i class="bi bi-geo-alt me-1"></i>{{ r.structure.city_it }}
                   </span>
                 {% endif %}
               </td>
@@ -54,9 +54,9 @@
                 {% endif %}
               </td>
               <td class="small">
-                {% if r.phone %}
-                  <a href="tel:{{ r.phone }}" class="text-decoration-none">
-                    <i class="bi bi-telephone me-1"></i>{{ r.phone }}
+                {% if r.structure.phone %}
+                  <a href="tel:{{ r.structure.phone|cut:' ' }}" class="text-decoration-none">
+                    <i class="bi bi-telephone me-1"></i>{{ r.structure.phone }}
                   </a>
                 {% endif %}
                 {% if r.info_it %}

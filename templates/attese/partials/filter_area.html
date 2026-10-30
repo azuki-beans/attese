@@ -1,1 +1,8 @@
+{% if records %}
+<div class="text-end small mb-2">
+  <a href="{% url 'activity_detail_short' activity_code %}" class="text-success">
+    <i class="bi bi-link-45deg me-1"></i>Pagina di questa prestazione (link da condividere)
+  </a>
+</div>
+{% endif %}
 {% include "attese/partials/results_table.html" %}

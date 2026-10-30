@@ -1,13 +1,25 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard tempi di attesa – Alto Adige{% endblock %}
+{% block title %}Tempi di attesa sanitari in Alto Adige – visite ed esami{% endblock %}
+
+{% block extra_head %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Tempi di attesa sanitari – Alto Adige",
+  "url": "{{ SITE_URL }}/",
+  "inLanguage": "it"
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="row mb-4">
   <div class="col">
-    <h2 class="fw-bold mb-1">
-      <i class="bi bi-calendar2-heart me-2 text-success"></i>Tempi di attesa sanitari
-    </h2>
+    <h1 class="h2 fw-bold mb-1">
+      <i class="bi bi-calendar2-heart me-2 text-success"></i>Tempi di attesa sanitari in Alto Adige
+    </h1>
     <p class="text-muted mb-0">
       Dati aggiornati dall'<a href="https://data.civis.bz.it/it/dataset/southtyrolean-healthservices-waitingtimes" target="_blank">opendata dell'Alto Adige / Südtirol</a>.
       Seleziona una prestazione per vedere le prime date disponibili.
@@ -100,4 +112,16 @@
     </div>
   {% endif %}
 </div>
+
+{% if current_activities %}
+<div class="card mt-4">
+  <div class="card-header bg-white d-flex align-items-center gap-2">
+    <i class="bi bi-list-ul text-success"></i>
+    <h2 class="h6 fw-semibold mb-0">Tutte le prestazioni</h2>
+  </div>
+  <div class="card-body">
+    {% include "attese/partials/activity_links.html" %}
+  </div>
+</div>
+{% endif %}
 {% endblock %}
