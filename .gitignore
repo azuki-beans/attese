@@ -229,3 +229,11 @@ staticfiles/
 
 # Stack compose locali/prod: non committati
 stacks/
+
+# Archivi, chiavi e certificati locali: mai nel repo
+*.zip
+*.pem
+*.key
+*.pfx
+*.p12
+*.csr

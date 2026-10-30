@@ -82,7 +82,8 @@ echo -n "..." | gcloud secrets create attese-google-client-secret --data-file=-
 `docker/Dockerfile` non è in root, quindi `gcloud run deploy --source .` non lo trova (proverebbe
 i buildpack e fallisce). Si builda con Cloud Build usando `docker/cloudbuild.yaml`, che pubblica
 l'immagine su Artifact Registry come `:<tag>` e `:latest` — non dipende dalla visibilità del repo
-GitHub né da `ghcr.io`:
+GitHub né da `ghcr.io`. Cosa viene caricato su Cloud Build lo decide `.gcloudignore` (verificabile
+con `gcloud meta list-files-for-upload .`):
 
 ```bash
 TAG=v1.2.3   # lo stesso tag git del rilascio

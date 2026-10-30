@@ -1,0 +1,45 @@
+# Cosa NON viene caricato su Cloud Build da `gcloud builds submit`.
+# Senza questo file gcloud carica tutta la cartella (salvo .gitignore): anche file locali non
+# versionati finirebbero nel bucket dei sorgenti. Cosa entra poi nell'immagine lo decide
+# .dockerignore; docker/ qui deve restare (Dockerfile e cloudbuild.yaml servono alla build).
+#!include:.gitignore
+
+# VCS / IDE / ambienti locali
+.git
+.github
+.gcloudignore
+.idea
+.vscode
+.venv
+venv
+.DS_Store
+
+# Cache e artefatti
+**/__pycache__
+**/*.pyc
+.ruff_cache
+staticfiles
+celerybeat-schedule*
+
+# Dati, archivi, chiavi e certificati locali
+*.sqlite3
+*.sql
+*.log
+*.zip
+*.tgz
+*.pem
+*.key
+*.pfx
+*.p12
+*.csr
+*.json
+
+# Documentazione e test
+*.md
+docs
+tests
+
+# Stack compose e configurazione
+stacks
+.env
+.env.*
