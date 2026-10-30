@@ -9,7 +9,7 @@ Il progetto è pensato per girare dietro un reverse proxy (nginx, Caddy, Traefik
 l'HTTPS e inoltra a Django in HTTP. `config/settings.py` è già configurato per fidarsi
 dell'header `X-Forwarded-Proto`.
 
-1. Copia `stacks/stack-prod.yml` e crea un file `.env` accanto (vedi `.env.example` per la lista
+1. Prepara uno `stacks/stack-prod.yml` (la cartella `stacks/` non è versionata) e crea un file `.env` accanto (vedi `.env.example` per la lista
    completa delle variabili: `SECRET_KEY`, `POSTGRES_PASSWORD`, `ALLOWED_HOSTS`,
    `GOOGLE_CLIENT_ID`/`SECRET`, SMTP, `SITE_URL`, `CSRF_TRUSTED_ORIGINS`, ...).
 2. Avvia lo stack:
@@ -20,6 +20,8 @@ dell'header `X-Forwarded-Proto`.
    giorno alle 06:00). Le immagini sono quelle pubblicate su `ghcr.io/azuki-beans/attese` dalla
    CI al push di un tag `v*` (`git tag v1.2.3 && git push origin v1.2.3`): ogni rilascio è
    taggato `1.2.3`, `1.2` e `latest`, e lo stack usa `:latest`.
+   Il web gira con gunicorn gthread: `GUNICORN_WORKERS` (default 2) × `GUNICORN_THREADS`
+   (default 4); il worker Celery usa `--concurrency=1` (c'è un solo task giornaliero).
 3. Configura il reverse proxy per inoltrare a `attese:8000` (nome del servizio nello stack),
    impostando `X-Forwarded-Proto` e `Host`:
    ```nginx
@@ -61,7 +63,8 @@ SCHEDULER_REGION=europe-west3  # Cloud Scheduler (creato lì, funziona lo stesso
 BUCKET=attese-data
 
 gcloud config set project "$PROJECT"
-gcloud services enable run.googleapis.com storage.googleapis.com cloudscheduler.googleapis.com
+gcloud services enable run.googleapis.com storage.googleapis.com cloudscheduler.googleapis.com \\
+  cloudbuild.googleapis.com artifactregistry.googleapis.com
 
 gcloud storage buckets create "gs://$BUCKET" --location="$REGION" --uniform-bucket-level-access
 ```
@@ -74,29 +77,57 @@ echo -n "..." | gcloud secrets create attese-google-client-id --data-file=-
 echo -n "..." | gcloud secrets create attese-google-client-secret --data-file=-
 ```
 
-### 2. Servizio web
+### 2. Build dell'immagine
+
+`docker/Dockerfile` non è in root, quindi `gcloud run deploy --source .` non lo trova (proverebbe
+i buildpack e fallisce). Si builda con Cloud Build usando `docker/cloudbuild.yaml`, che pubblica
+l'immagine su Artifact Registry come `:<tag>` e `:latest` — non dipende dalla visibilità del repo
+GitHub né da `ghcr.io`:
+
+```bash
+TAG=v1.2.3   # lo stesso tag git del rilascio
+IMAGE="$REGION-docker.pkg.dev/$PROJECT/cloud-run-source-deploy/attese:$TAG"
+
+gcloud builds submit --region "$REGION" --config docker/cloudbuild.yaml --substitutions _TAG="$TAG" .
+```
+
+### 3. Servizio web
+
+Primo deploy (configurazione completa):
 
 ```bash
 gcloud run deploy attese \
-  --source . \
+  --image "$IMAGE" \
   --region "$REGION" \
   --execution-environment gen2 \
+  --memory 512Mi --cpu 1 \
   --add-volume name=data,type=cloud-storage,bucket="$BUCKET" \
   --add-volume-mount volume=data,mount-path=/data \
   --max-instances 1 \
-  --set-env-vars DEBUG=0,DATABASE_ENGINE=sqlite,SQLITE_PATH=/data/db.sqlite3,ALLOWED_HOSTS=attese.azukibeans.dev,SITE_URL=https://attese.azukibeans.dev,CSRF_TRUSTED_ORIGINS=https://attese.azukibeans.dev \
+  --set-env-vars "^;^DEBUG=0;GUNICORN_WORKERS=1;DATABASE_ENGINE=sqlite;SQLITE_PATH=/data/db.sqlite3;ALLOWED_HOSTS=.run.app,attese.azukibeans.dev;SITE_URL=https://attese.azukibeans.dev;CSRF_TRUSTED_ORIGINS=https://attese.azukibeans.dev" \
   --set-secrets SECRET_KEY=attese-secret-key:latest,GOOGLE_CLIENT_ID=attese-google-client-id:latest,GOOGLE_CLIENT_SECRET=attese-google-client-secret:latest \
   --allow-unauthenticated
 ```
 
-`--source .` fa buildare l'immagine a Cloud Build e la pubblica su Artifact Registry — non dipende
-dalla visibilità del repo GitHub né da `ghcr.io`.
+`^;^` cambia il separatore delle variabili (`ALLOWED_HOSTS` contiene una virgola).
+`GUNICORN_WORKERS=1`: con SQLite e una sola istanza basta un processo gunicorn (gthread, 4 thread),
+~1/3 della RAM rispetto ai vecchi 3 worker sync. `512Mi` è il minimo consentito da gen2 (che serve
+per il volume Cloud Storage), quindi il limite non scende oltre.
 
-Migrazioni al primo deploy (e a ogni nuova migration):
+Rilasci successivi (env, volume e segreti restano quelli già configurati):
+
+```bash
+gcloud run deploy attese --image "$IMAGE" --region "$REGION"
+gcloud run jobs update attese-fetch --image "$IMAGE" --region "$REGION"
+gcloud run jobs update attese-migrate --image "$IMAGE" --region "$REGION"
+```
+
+Le migrazioni girano anche all'avvio del container (`boot.sh`); il job `attese-migrate` serve per
+lanciarle esplicitamente prima del primo deploy o dopo una migration delicata:
 
 ```bash
 gcloud run jobs deploy attese-migrate \
-  --source . \
+  --image "$IMAGE" \
   --region "$REGION" \
   --execution-environment gen2 \
   --add-volume name=data,type=cloud-storage,bucket="$BUCKET" \
@@ -107,11 +138,11 @@ gcloud run jobs deploy attese-migrate \
 gcloud run jobs execute attese-migrate --region "$REGION" --wait
 ```
 
-### 3. Import giornaliero (Cloud Run Job + Cloud Scheduler)
+### 4. Import giornaliero (Cloud Run Job + Cloud Scheduler)
 
 ```bash
 gcloud run jobs deploy attese-fetch \
-  --source . \
+  --image "$IMAGE" \
   --region "$REGION" \
   --execution-environment gen2 \
   --add-volume name=data,type=cloud-storage,bucket="$BUCKET" \
@@ -128,7 +159,7 @@ gcloud scheduler jobs create http attese-fetch-daily \
   --oauth-service-account-email "SCHEDULER_SA@$PROJECT.iam.gserviceaccount.com"
 ```
 
-### 4. Dominio custom, Cloudflare e login Google
+### 5. Dominio custom, Cloudflare e login Google
 
 Stato attuale: `attese.azukibeans.dev` è mappato al servizio (attivo dal 16/08/2026) e servito
 dietro il proxy Cloudflare.

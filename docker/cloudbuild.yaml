@@ -1,0 +1,8 @@
+# Build dell'immagine per Cloud Run (Dockerfile in docker/, non in root: --source . non lo trova).
+# Uso: gcloud builds submit --region europe-west1 --config docker/cloudbuild.yaml --substitutions _TAG=v1.2.3 .
+substitutions:
+  _IMAGE: europe-west1-docker.pkg.dev/waiting-list-497918/cloud-run-source-deploy/attese
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: ["build", "-f", "docker/Dockerfile", "-t", "${_IMAGE}:${_TAG}", "-t", "${_IMAGE}:latest", "."]
+images: ["${_IMAGE}:${_TAG}", "${_IMAGE}:latest"]

@@ -28,6 +28,9 @@ celerybeat-schedule*
 *.log
 *.zip
 
+# Config di build (Dockerfile, Cloud Build): non serve a runtime
+docker
+
 # Documentazione e test
 *.md
 docs
