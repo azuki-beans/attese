@@ -1,10 +1,36 @@
 import json
 
-from django.db.models import Avg
-from django.shortcuts import render
+from django.conf import settings
+from django.db.models import Avg, Max
+from django.http import Http404, HttpResponse
+from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.utils.text import slugify
 from django.views import View
 
 from .models import DataFetchLog, WaitingRecord
+
+
+def latest_records(activity_code):
+    """
+    Record dell'ultima pubblicazione opendata per una prestazione.
+    Le pubblicazioni precedenti restano nel DB solo per lo storico dei grafici.
+    """
+    qs = WaitingRecord.objects.filter(activity_code=activity_code)
+    latest = qs.aggregate(Max("publish_date"))["publish_date__max"]
+    return qs.filter(publish_date=latest).select_related("structure").order_by("waiting_days")
+
+
+def current_activities():
+    """Prestazioni presenti nell'ultima pubblicazione opendata, in ordine alfabetico."""
+    latest = WaitingRecord.objects.aggregate(Max("publish_date"))["publish_date__max"]
+    return (
+        WaitingRecord.objects
+        .filter(publish_date=latest)
+        .values("activity_code", "activity_description_it")
+        .distinct()
+        .order_by("activity_description_it")
+    )
 
 
 class DashboardView(View):
@@ -25,9 +51,56 @@ class DashboardView(View):
         last_fetch = DataFetchLog.objects.first()
         return render(request, "attese/dashboard.html", {
             "activities": activities,
+            "current_activities": current_activities(),
             "has_data": has_data,
             "last_fetch": last_fetch,
         })
+
+
+class ActivityIndexView(View):
+    """Elenco A–Z delle prestazioni, con un link alla pagina di ciascuna (indicizzabile)."""
+
+    def get(self, request):
+        return render(request, "attese/activity_index.html", {
+            "current_activities": current_activities(),
+        })
+
+
+class ActivityDetailView(View):
+    """
+    Pagina pubblica di una prestazione, renderizzata lato server (niente htmx):
+    è quella che Google indicizza per ricerche tipo "tempi di attesa visita oculistica Bolzano".
+    """
+
+    def get(self, request, code, slug=None):
+        records = list(latest_records(code))
+        if not records:
+            raise Http404("Prestazione non trovata")
+
+        activity = records[0]
+        canonical_slug = slugify(activity.activity_description_it)
+        if slug != canonical_slug:
+            return redirect("activity_detail", code=code, slug=canonical_slug, permanent=True)
+
+        best = next((r for r in records if r.waiting_days is not None), None)
+        return render(request, "attese/activity_detail.html", {
+            "activity": activity,
+            "records": records,
+            "best": best,
+        })
+
+
+def robots_txt(request):
+    lines = [
+        "User-agent: *",
+        "Disallow: /django-admin/",
+        "Disallow: /accounts/",
+        "Disallow: /partials/",
+        "Disallow: /i18n/",
+        "",
+        f"Sitemap: {settings.SITE_URL.rstrip('/')}{reverse('sitemap')}",
+    ]
+    return HttpResponse("\n".join(lines) + "\n", content_type="text/plain")
 
 
 class FilterPartialView(View):
@@ -50,11 +123,7 @@ class FilterPartialView(View):
             .order_by("structure__description_it")
         )
 
-        records = (
-            WaitingRecord.objects
-            .filter(activity_code=activity_code)
-            .order_by("waiting_days")
-        )
+        records = latest_records(activity_code)
 
         return render(request, "attese/partials/filter_area.html", {
             "activity_code": activity_code,
@@ -75,11 +144,9 @@ class ResultsPartialView(View):
         if not activity_code:
             return render(request, "attese/partials/empty.html")
 
-        qs = WaitingRecord.objects.filter(activity_code=activity_code)
+        records = latest_records(activity_code)
         if structure:
-            qs = qs.filter(structure=structure)
-
-        records = qs.order_by("waiting_days")
+            records = records.filter(structure=structure)
 
         return render(request, "attese/partials/results_table.html", {
             "records": records,

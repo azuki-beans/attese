@@ -18,7 +18,8 @@ dell'header `X-Forwarded-Proto`.
    ```
    Include Postgres, Redis, l'app web, Celery worker e Celery beat (che aggiorna i dati ogni
    giorno alle 06:00). Le immagini sono quelle pubblicate su `ghcr.io/azuki-beans/attese` dalla
-   CI a ogni push su `main`.
+   CI al push di un tag `v*` (`git tag v1.2.3 && git push origin v1.2.3`): ogni rilascio è
+   taggato `1.2.3`, `1.2` e `latest`, e lo stack usa `:latest`.
 3. Configura il reverse proxy per inoltrare a `attese:8000` (nome del servizio nello stack),
    impostando `X-Forwarded-Proto` e `Host`:
    ```nginx
@@ -55,7 +56,8 @@ Il codice legge la variabile `DATABASE_ENGINE=sqlite` per passare da Postgres (d
 
 ```bash
 PROJECT=waiting-list-497918   # progetto GCP esistente, già usato per questo servizio
-REGION=europe-west3
+REGION=europe-west1          # servizio web e job Cloud Run
+SCHEDULER_REGION=europe-west3  # Cloud Scheduler (creato lì, funziona lo stesso cross-region)
 BUCKET=attese-data
 
 gcloud config set project "$PROJECT"
@@ -118,18 +120,32 @@ gcloud run jobs deploy attese-fetch \
   --command python --args manage.py,fetch_waitingtimes
 
 gcloud scheduler jobs create http attese-fetch-daily \
-  --location "$REGION" \
+  --location "$SCHEDULER_REGION" \
   --schedule "0 6 * * *" \
+  --time-zone "Europe/Rome" \
   --uri "https://$REGION-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/$PROJECT/jobs/attese-fetch:run" \
   --http-method POST \
   --oauth-service-account-email "SCHEDULER_SA@$PROJECT.iam.gserviceaccount.com"
 ```
 
-### 4. Dominio custom e login Google
+### 4. Dominio custom, Cloudflare e login Google
 
-1. Mappa `attese.azukibeans.dev` al servizio con
-   [`gcloud run domain-mappings create`](https://cloud.google.com/run/docs/mapping-custom-domains).
-2. Registra `https://attese.azukibeans.dev/accounts/google/login/callback/` come URI di redirect
+Stato attuale: `attese.azukibeans.dev` è mappato al servizio (attivo dal 16/08/2026) e servito
+dietro il proxy Cloudflare.
+
+1. Mappa il dominio al servizio con
+   [`gcloud beta run domain-mappings create`](https://cloud.google.com/run/docs/mapping-custom-domains):
+   ```bash
+   gcloud beta run domain-mappings create --service attese --domain attese.azukibeans.dev \
+     --region "$REGION"
+   ```
+2. Su Cloudflare (zona `azukibeans.dev`) crea il record indicato dal mapping:
+   `CNAME attese → ghs.googlehosted.com`, con proxy attivo (nuvola arancione).
+   Impostare **SSL/TLS → Full (strict)**: con *Flexible* Cloudflare parla in HTTP con Google e si
+   rischiano loop di redirect e redirect URI OAuth in `http://`.
+   Se il certificato Google non si emette/rinnova, mettere temporaneamente il record in *DNS only*
+   finché `gcloud beta run domain-mappings describe` non mostra `CertificateProvisioned: True`.
+3. Registra `https://attese.azukibeans.dev/accounts/google/login/callback/` come URI di redirect
    autorizzato sul client OAuth Google (Google Cloud Console → Credentials).
 
 ### Limiti di questo setup

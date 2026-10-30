@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}{{ activity.activity_description_it }}: tempi di attesa in Alto Adige{% endblock %}
+{% block meta_description %}{{ activity.activity_description_it }} in Alto Adige: {% if best %}attesa minima {{ best.waiting_days }} giorn{{ best.waiting_days|pluralize:"o,i" }} ({{ best.structure.description_it }}{% if best.structure.city_it %}, {{ best.structure.city_it }}{% endif %}). {% endif %}Confronta i tempi di attesa in {{ records|length }} struttur{{ records|length|pluralize:"a,e" }} sanitari{{ records|length|pluralize:"a,e" }}, dati opendata{% if activity.publish_date %} del {{ activity.publish_date|date:"d/m/Y" }}{% endif %}.{% endblock %}
+{% block canonical_path %}{% url 'activity_detail' activity.activity_code activity.activity_description_it|slugify %}{% endblock %}
+{% block og_title %}{{ activity.activity_description_it }}: tempi di attesa in Alto Adige{% endblock %}
+{% block og_description %}{% if best %}Attesa minima {{ best.waiting_days }} giorn{{ best.waiting_days|pluralize:"o,i" }} – {% endif %}confronto tra {{ records|length }} struttur{{ records|length|pluralize:"a,e" }} in Alto Adige.{% endblock %}
+
+{% block extra_head %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "{{ SITE_URL }}/"},
+    {"@type": "ListItem", "position": 2, "name": "Prestazioni", "item": "{{ SITE_URL }}{% url 'activity_index' %}"},
+    {"@type": "ListItem", "position": 3, "name": "{{ activity.activity_description_it|escapejs }}"}
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'activity_index' %}">Prestazioni</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ activity.activity_description_it }}</li>
+  </ol>
+</nav>
+
+<div class="mb-4">
+  <h1 class="h2 fw-bold mb-1">
+    <i class="bi bi-clipboard2-pulse me-2 text-success"></i>{{ activity.activity_description_it }}
+  </h1>
+  {% if activity.activity_description_de %}
+    <p class="text-muted mb-2" lang="de">{{ activity.activity_description_de }}</p>
+  {% endif %}
+  <p class="mb-2">
+    Tempi di attesa per <strong>{{ activity.activity_description_it }}</strong> nelle strutture
+    sanitarie dell'Alto Adige{% if best %}: l'attesa più breve è di
+    <strong>{{ best.waiting_days }} giorn{{ best.waiting_days|pluralize:"o,i" }}</strong> presso
+    {{ best.structure.description_it }}{% if best.structure.city_it %} ({{ best.structure.city_it }}){% endif %}{% endif %}.
+  </p>
+  <div class="d-flex flex-wrap gap-3 small text-muted">
+    {% if activity.survey_date %}
+      <span><i class="bi bi-clipboard2-check me-1 text-success"></i>Rilevazione: {{ activity.survey_date|date:"d/m/Y" }}</span>
+    {% endif %}
+    {% if activity.publish_date %}
+      <span><i class="bi bi-cloud-arrow-up me-1 text-success"></i>Pubblicazione opendata: {{ activity.publish_date|date:"d/m/Y" }}</span>
+    {% endif %}
+  </div>
+</div>
+
+{% include "attese/partials/results_table.html" %}
+
+<div class="d-flex flex-wrap gap-2 mt-4">
+  <a href="{% url 'statistics' %}" class="btn btn-outline-success btn-sm">
+    <i class="bi bi-bar-chart-line me-1"></i>Andamento nel tempo
+  </a>
+  <a href="{% url 'activity_index' %}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-list-ul me-1"></i>Tutte le prestazioni
+  </a>
+</div>
+
+<div class="alert alert-warning mt-4 small">
+  <i class="bi bi-exclamation-triangle me-1"></i>
+  Progetto amatoriale senza garanzie: per prenotare contatta il CUP dell'<a href="https://www.sabes.it" target="_blank" class="alert-link">Azienda Sanitaria dell'Alto Adige</a> (0471 100 200).
+</div>
+{% endblock %}
