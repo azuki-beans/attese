@@ -84,7 +84,8 @@ else:
             "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "attese"),
             "HOST": os.environ.get("POSTGRES_HOST", "db"),
             "PORT": os.environ.get("POSTGRES_PORT", "5432"),
-            "OPTIONS": {"pool": True},
+            # Pool piccolo: con gunicorn gthread bastano poche connessioni per processo
+            "OPTIONS": {"pool": {"min_size": 1, "max_size": int(os.environ.get("GUNICORN_THREADS", 4))}},
         }
     }
 
