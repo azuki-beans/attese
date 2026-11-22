@@ -7,7 +7,7 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.14"
-Django = "^6.0.5"
+Django = "~6.0.8"
 psycopg = {version = "^3.3.4", extras = ["binary", "pool"]}
 django-allauth = {version = "^65.18.0", extras = ["socialaccount"]}
 django-htmx = "^1.27.0"
@@ -29,3 +29,8 @@ build-backend = "poetry.core.masonry.api"
 [tool.ruff]
 line-length = 120
 target-version = "py314"
+extend-exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+# RUF012: Meta/admin di Django usano liste e tuple come attributi di classe
+extend-ignore = ["RUF012"]
