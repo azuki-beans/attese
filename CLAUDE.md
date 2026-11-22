@@ -30,7 +30,7 @@ utenti già `is_staff=True` esistenti (vedi `accounts/adapters.py`) — non c'è
 - **Rinominato da `waitimes`/`waittimes` ad `attese`** (rename completo: app Django, DB, immagine
   Docker, repo). Il vecchio repo privato `azuki-beans/waittimes` esiste ancora ma è stato
   abbandonato (conteneva un secret OAuth leakato in git history) — il repo attivo è
-  `azuki-beans/attese`, branch `attese-main`, storia partita pulita da zero.
+  `azuki-beans/attese`, branch `main`, storia partita pulita da zero.
 - **DB switchabile**: `config/settings.py` usa Postgres di default, ma passa a SQLite se
   `DATABASE_ENGINE=sqlite` — usato solo per il deploy demo su Cloud Run (SQLite su volume GCS
   montato, `--max-instances 1` per via degli scrittori concorrenti). Il self-host via
@@ -38,9 +38,10 @@ utenti già `is_staff=True` esistenti (vedi `accounts/adapters.py`) — non c'è
 - **GCP**: demo live su Cloud Run, progetto `waiting-list-497918` (nome visualizzato rinominato in
   "attese", ma l'ID progetto resta quello per via del client OAuth Google riutilizzato). Dettagli
   completi dell'infrastruttura in [DEPLOY.md](DEPLOY.md).
-- **Stato repo**: privato su GitHub (`azuki-beans/attese`), in preparazione per diventare pubblico.
-  Rendere pubblico solo dopo conferma esplicita — non autonomamente. Non committare mai dati
-  personali o note su infrastrutture non legate al progetto.
+- **Stato repo**: **pubblico** su GitHub (`azuki-beans/attese`) dal 22/11/2026, dopo la
+  riscrittura della storia (email dei commit solo `@gmail.com`, scansione gitleaks pulita). Tutto
+  ciò che si committa è visibile a chiunque: mai dati personali, segreti o note su infrastrutture
+  non legate al progetto.
 - **Hosting attuale**: Cloud Run, servizio `attese` + job `attese-fetch`/`attese-migrate` in
   **`europe-west1`**; Cloud Scheduler `attese-fetch-daily` (06:00 Europe/Rome) in `europe-west3`.
   Env del servizio: `GUNICORN_WORKERS=1`, 512Mi (minimo per gen2).
