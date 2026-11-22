@@ -137,10 +137,14 @@ gcloud run jobs deploy attese-migrate \
   --add-volume name=data,type=cloud-storage,bucket="$BUCKET" \
   --add-volume-mount volume=data,mount-path=/data \
   --set-env-vars DATABASE_ENGINE=sqlite,SQLITE_PATH=/data/db.sqlite3 \
+  --set-secrets SECRET_KEY=attese-secret-key:latest \
   --command python --args manage.py,migrate
 
 gcloud run jobs execute attese-migrate --region "$REGION" --wait
 ```
+
+Anche i job caricano `config/settings.py`, che senza `SECRET_KEY` non si avvia: il secret serve
+anche a loro, non solo al servizio.
 
 ### 4. Import giornaliero (Cloud Run Job + Cloud Scheduler)
 
@@ -152,6 +156,7 @@ gcloud run jobs deploy attese-fetch \
   --add-volume name=data,type=cloud-storage,bucket="$BUCKET" \
   --add-volume-mount volume=data,mount-path=/data \
   --set-env-vars DATABASE_ENGINE=sqlite,SQLITE_PATH=/data/db.sqlite3 \
+  --set-secrets SECRET_KEY=attese-secret-key:latest \
   --command python --args manage.py,fetch_waitingtimes
 
 gcloud scheduler jobs create http attese-fetch-daily \
