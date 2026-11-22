@@ -22,6 +22,12 @@ RUN poetry install --only main --no-interaction --no-ansi --no-root \
 # --- runtime -----------------------------------------------------------------
 FROM python:3.14-slim
 
+# Correzioni di sicurezza Debian arrivate dopo l'ultima build di python:*-slim
+# (es. zlib1g CVE-2026-85091). Nessun pacchetto aggiuntivo.
+RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
 # MALLOC_ARENA_MAX: limita le arene malloc di glibc per thread (gunicorn gthread),
 # meno memoria frammentata/RSS per processo.
 ENV PYTHONDONTWRITEBYTECODE=1 \
