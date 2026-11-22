@@ -13,6 +13,12 @@
   <meta property="og:title" content="{% block og_title %}Tempi di attesa sanitari – Alto Adige{% endblock %}">
   <meta property="og:description" content="{% block og_description %}Visite ed esami specialistici in Alto Adige: tempi di attesa e date disponibili più vicine per struttura, da dati opendata.{% endblock %}">
   <meta property="og:url" content="{{ SITE_URL }}{{ request.path }}">
+  {# anteprima dei link condivisi (1200×630); URL assoluto: i social non risolvono quelli relativi #}
+  <meta property="og:image" content="{{ SITE_URL }}{% static 'images/og-image.png' %}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Tempi di attesa sanitari in Alto Adige: visite ed esami specialistici">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
   <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32.png' %}">
   <link rel="apple-touch-icon" href="{% static 'images/apple-touch-icon.png' %}">
