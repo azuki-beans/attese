@@ -1,7 +1,6 @@
 import requests
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.db import transaction
 
 from attese.models import DataFetchLog, Structure, WaitingRecord
 
@@ -11,7 +10,7 @@ def _parse_date(value):
         return None
     try:
         return value[:10]  # "YYYY-MM-DD"
-    except Exception:
+    except TypeError:
         return None
 
 
@@ -91,7 +90,7 @@ def fetch_and_import(stdout=None):
                 structure=structure,
                 waiting_days=item.get("waitingDays"),
                 priority_list=_bool(item.get("priorityList", False)),
-                info_it=item.get("infoIt") or "",
+                info_it=item.get("infoit") or item.get("infoIt") or "",
                 info_de=item.get("infoDe") or "",
                 publish_date=publish_date,
             )
@@ -118,6 +117,6 @@ class Command(BaseCommand):
         except requests.RequestException as exc:
             self.stderr.write(self.style.ERROR(f"Errore di rete: {exc}"))
             raise SystemExit(1)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - ultimo paracadute del comando
             self.stderr.write(self.style.ERROR(f"Errore imprevisto: {exc}"))
             raise SystemExit(1)

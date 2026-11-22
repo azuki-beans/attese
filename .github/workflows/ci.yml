@@ -1,0 +1,44 @@
+name: CI
+
+# Solo validazione (non pubblica niente): su ogni PR e sui push di branch.
+on:
+  pull_request:
+  push:
+    branches: ["**"]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      DEBUG: "0"
+      SECRET_KEY: ci-only-not-a-secret-ci-only-not-a-secret-ci-only-not-a-secret
+      DATABASE_ENGINE: sqlite
+      ALLOWED_HOSTS: localhost
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Ruff
+        run: pipx run ruff check .
+
+      - name: Dipendenze
+        run: |
+          pip install poetry
+          poetry config virtualenvs.create false
+          poetry install --only main --no-interaction --no-ansi --no-root
+
+      - name: Django check
+        run: |
+          python manage.py check --deploy --fail-level ERROR
+          python manage.py makemigrations --check --dry-run
+
+      - name: Vulnerabilità note (pip-audit)
+        run: |
+          pip freeze --exclude-editable > /tmp/requirements.txt
+          pipx run pip-audit -r /tmp/requirements.txt --no-deps --disable-pip

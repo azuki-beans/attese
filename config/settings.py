@@ -3,8 +3,12 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-dev-key")
-DEBUG = os.environ.get("DEBUG", "1") == "1"
+# Default sicuri: senza variabili d'ambiente si parte in produzione (DEBUG off) e
+# senza SECRET_KEY l'app non si avvia. La chiave di sviluppo vale solo con DEBUG=1.
+DEBUG = os.environ.get("DEBUG", "0") == "1"
+SECRET_KEY = os.environ.get("SECRET_KEY") or ("django-insecure-dev-key" if DEBUG else "")
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY non impostata (obbligatoria con DEBUG=0)")
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -85,7 +89,7 @@ else:
             "HOST": os.environ.get("POSTGRES_HOST", "db"),
             "PORT": os.environ.get("POSTGRES_PORT", "5432"),
             # Pool piccolo: con gunicorn gthread bastano poche connessioni per processo
-            "OPTIONS": {"pool": {"min_size": 1, "max_size": int(os.environ.get("GUNICORN_THREADS", 4))}},
+            "OPTIONS": {"pool": {"min_size": 1, "max_size": int(os.environ.get("GUNICORN_THREADS", "4"))}},
         }
     }
 
@@ -112,7 +116,10 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+}
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -164,20 +171,28 @@ LOGIN_REDIRECT_URL = "/"
 ACCOUNT_LOGOUT_REDIRECT_URL = "/"
 
 # ---------------------------------------------------------------------------
-# Email
+# Email: nessun invio (niente SMTP). L'app non spedisce email; gli errori 500
+# finiscono nei log del container tramite il logger django.request.
 # ---------------------------------------------------------------------------
-_email_backend = os.environ.get("EMAIL_BACKEND", "smtp")
-if _email_backend == "gmail":
-    EMAIL_BACKEND = "config.gmail_backend.GmailAPIBackend"
-else:
-    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-    EMAIL_HOST = os.environ.get("EMAIL_HOST", "mailpit")
-    EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 1025))
-    EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
-    EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
-    EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "False") == "True"
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "noreply@attese.example.com")
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "loggers": {"django.request": {"handlers": ["console"], "level": "ERROR"}},
+}
+
+# ---------------------------------------------------------------------------
+# HTTPS (dietro proxy: Cloud Run / nginx terminano TLS)
+# ---------------------------------------------------------------------------
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = int(os.environ.get("SECURE_HSTS_SECONDS", str(60 * 60 * 24 * 365)))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 
 SITE_URL = os.environ.get("SITE_URL", "http://localhost:8000")
 
