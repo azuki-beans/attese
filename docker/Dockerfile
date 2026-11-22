@@ -39,7 +39,8 @@ WORKDIR /app
 # Codice: cosa entra lo decide .dockerignore
 COPY . .
 
-RUN python manage.py collectstatic --noinput
+# Chiave fittizia solo per collectstatic: quella vera arriva a runtime
+RUN SECRET_KEY=collectstatic-only python manage.py collectstatic --noinput
 
 EXPOSE 8000
 CMD ["/bin/bash", "/app/boot.sh"]

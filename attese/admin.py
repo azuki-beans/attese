@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from .models import DataFetchLog, Structure, WaitingRecord
 
 
@@ -21,6 +22,5 @@ class DataFetchLogAdmin(admin.ModelAdmin):
 
 @admin.register(Structure)
 class StructureAdmin(admin.ModelAdmin):
-    list_display = ("description_it","address_name_it", "city_it")
-    search_fields = ("description_it",)
-    search_fields = ("description_it", "address_name")
+    list_display = ("description_it", "address_name_it", "city_it")
+    search_fields = ("description_it", "address_name_it")

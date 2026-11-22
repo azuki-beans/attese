@@ -129,6 +129,8 @@
 {% endblock %}
 
 {% block extra_js %}
+{{ global_labels|json_script:"global-labels" }}
+{{ global_data|json_script:"global-data" }}
 <script>
 const BZ_GREEN = '#006b3f';
 
@@ -179,8 +181,8 @@ function makeLineChart(canvasId, labels, data, label) {
 // Grafico globale
 makeLineChart(
   'globalChart',
-  {{ global_labels|safe }},
-  {{ global_data|safe }},
+  JSON.parse(document.getElementById('global-labels').textContent),
+  JSON.parse(document.getElementById('global-data').textContent),
   'Media globale giorni di attesa'
 );
 
