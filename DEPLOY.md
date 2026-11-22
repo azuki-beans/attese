@@ -11,7 +11,7 @@ dell'header `X-Forwarded-Proto`.
 
 1. Prepara uno `stacks/stack-prod.yml` (la cartella `stacks/` non è versionata) e crea un file `.env` accanto (vedi `.env.example` per la lista
    completa delle variabili: `SECRET_KEY`, `POSTGRES_PASSWORD`, `ALLOWED_HOSTS`,
-   `GOOGLE_CLIENT_ID`/`SECRET`, SMTP, `SITE_URL`, `CSRF_TRUSTED_ORIGINS`, ...).
+   `GOOGLE_CLIENT_ID`/`SECRET`, `SITE_URL`, `CSRF_TRUSTED_ORIGINS`, ...).
 2. Avvia lo stack:
    ```bash
    podman compose -f stacks/stack-prod.yml --env-file .env up -d

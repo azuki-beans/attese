@@ -183,8 +183,8 @@ class StatisticsView(View):
 
         return render(request, "attese/statistics.html", {
             "activities": activities,
-            "global_labels": json.dumps(global_labels),
-            "global_data": json.dumps(global_data),
+            "global_labels": global_labels,
+            "global_data": global_data,
         })
 
 
