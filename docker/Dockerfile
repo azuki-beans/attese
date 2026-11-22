@@ -1,6 +1,6 @@
 # --- builder: risolve le dipendenze in un venv isolato -----------------------
 # Poetry (e le sue dipendenze) restano qui: nell'immagine finale entra solo /venv.
-FROM python:3.14-slim AS builder
+FROM python:3.15-slim AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
@@ -20,7 +20,7 @@ RUN poetry install --only main --no-interaction --no-ansi --no-root \
 
 
 # --- runtime -----------------------------------------------------------------
-FROM python:3.14-slim
+FROM python:3.15-slim
 
 # Correzioni di sicurezza Debian arrivate dopo l'ultima build di python:*-slim
 # (es. zlib1g CVE-2026-85091). Nessun pacchetto aggiuntivo.
