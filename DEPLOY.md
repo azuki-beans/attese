@@ -17,8 +17,10 @@ dell'header `X-Forwarded-Proto`.
    podman compose -f stacks/stack-prod.yml --env-file .env up -d
    ```
    Include Postgres, Redis, l'app web, Celery worker e Celery beat (che aggiorna i dati ogni
-   giorno alle 06:00). La CI non pubblica più su `ghcr.io` (il rilascio va solo su Cloud Run):
-   l'immagine si builda sul server con `podman build -f docker/Dockerfile -t attese:latest .`.
+   giorno alle 06:00). Le immagini sono quelle pubblicate su `ghcr.io/azuki-beans/attese` dalla
+   CI al push di un tag `v*` (`git tag v1.2.3 && git push origin v1.2.3`): ogni rilascio è
+   taggato `1.2.3`, `1.2` e `latest`, e lo stack usa `:latest`. Lo stesso tag fa anche il
+   deploy su Cloud Run (workflow separato, vedi sotto).
    Il web gira con gunicorn gthread: `GUNICORN_WORKERS` (default 2) × `GUNICORN_THREADS`
    (default 4); il worker Celery usa `--concurrency=1` (c'è un solo task giornaliero).
 3. Configura il reverse proxy per inoltrare a `attese:8000` (nome del servizio nello stack),
