@@ -17,9 +17,8 @@ dell'header `X-Forwarded-Proto`.
    podman compose -f stacks/stack-prod.yml --env-file .env up -d
    ```
    Include Postgres, Redis, l'app web, Celery worker e Celery beat (che aggiorna i dati ogni
-   giorno alle 06:00). Le immagini sono quelle pubblicate su `ghcr.io/azuki-beans/attese` dalla
-   CI al push di un tag `v*` (`git tag v1.2.3 && git push origin v1.2.3`): ogni rilascio è
-   taggato `1.2.3`, `1.2` e `latest`, e lo stack usa `:latest`.
+   giorno alle 06:00). La CI non pubblica più su `ghcr.io` (il rilascio va solo su Cloud Run):
+   l'immagine si builda sul server con `podman build -f docker/Dockerfile -t attese:latest .`.
    Il web gira con gunicorn gthread: `GUNICORN_WORKERS` (default 2) × `GUNICORN_THREADS`
    (default 4); il worker Celery usa `--concurrency=1` (c'è un solo task giornaliero).
 3. Configura il reverse proxy per inoltrare a `attese:8000` (nome del servizio nello stack),
@@ -79,11 +78,10 @@ echo -n "..." | gcloud secrets create attese-google-client-secret --data-file=-
 
 ### 2. Build dell'immagine
 
-`docker/Dockerfile` non è in root, quindi `gcloud run deploy --source .` non lo trova (proverebbe
-i buildpack e fallisce). Si builda con Cloud Build usando `docker/cloudbuild.yaml`, che pubblica
-l'immagine su Artifact Registry come `:<tag>` e `:latest` — non dipende dalla visibilità del repo
-GitHub né da `ghcr.io`. Cosa viene caricato su Cloud Build lo decide `.gcloudignore` (verificabile
-con `gcloud meta list-files-for-upload .`):
+Il primo rilascio, prima di configurare la CI, si builda con Cloud Build: `docker/Dockerfile` non è
+in root, quindi `gcloud run deploy --source .` non lo trova. `docker/cloudbuild.yaml` pubblica
+l'immagine su Artifact Registry come `:<tag>` e `:latest`; cosa viene caricato lo decide
+`.gcloudignore` (verificabile con `gcloud meta list-files-for-upload .`):
 
 ```bash
 TAG=v1.2.3   # lo stesso tag git del rilascio
@@ -91,6 +89,8 @@ IMAGE="$REGION-docker.pkg.dev/$PROJECT/cloud-run-source-deploy/attese:$TAG"
 
 gcloud builds submit --region "$REGION" --config docker/cloudbuild.yaml --substitutions _TAG="$TAG" .
 ```
+
+Dopo, i rilasci li fa GitHub Actions (vedi *Rilascio automatico* sotto).
 
 ### 3. Servizio web
 
@@ -115,7 +115,8 @@ gcloud run deploy attese \
 ~1/3 della RAM rispetto ai vecchi 3 worker sync. `512Mi` è il minimo consentito da gen2 (che serve
 per il volume Cloud Storage), quindi il limite non scende oltre.
 
-Rilasci successivi (env, volume e segreti restano quelli già configurati):
+Rilasci successivi: automatici da GitHub Actions al push di un tag (vedi *Rilascio automatico*).
+A mano, se serve (env, volume e segreti restano quelli già configurati):
 
 ```bash
 gcloud run deploy attese --image "$IMAGE" --region "$REGION"
@@ -188,3 +189,60 @@ dietro il proxy Cloudflare.
   amatoriale, non per dati critici.
 - Se in futuro serve scalare, il passo naturale è passare a Postgres (Cloud SQL, a pagamento, o un
   provider gestito esterno) rimuovendo `DATABASE_ENGINE=sqlite`.
+
+## Rilascio automatico (GitHub Actions + Workload Identity Federation)
+
+Come in `azuki-beans/coperni`. `.github/workflows/deploy.yml`, **solo sui tag `v*`**: build amd64,
+push su Artifact Registry (`cloud-run-source-deploy/attese:<tag>` e `:latest`), aggiornamento ed
+esecuzione di `attese-migrate`, `gcloud run deploy attese`, aggiornamento di `attese-fetch`.
+Cambia solo l'immagine. Gira nell'environment GitHub `production` (approvazione manuale).
+
+```bash
+git tag v1.2.3 && git push origin v1.2.3   # poi approva il deploy su GitHub (Actions)
+```
+
+Nessuna chiave JSON: il token OIDC di GitHub viene scambiato per credenziali temporanee, e GCP lo
+accetta solo da questo repository e dall'environment `production`. Setup una tantum:
+
+```bash
+PROJECT=waiting-list-497918; NUMBER=856750471646
+REPO_ID=1334301642; OWNER_ID=293202645   # gh api repos/azuki-beans/attese --jq '.id, .owner.id'
+SA=github-deploy@$PROJECT.iam.gserviceaccount.com
+RUNTIME_SA=$NUMBER-compute@developer.gserviceaccount.com   # SA con cui girano servizio e job
+
+gcloud iam service-accounts create github-deploy --project $PROJECT \
+  --display-name "GitHub Actions deploy (azuki-beans/attese)"
+
+# Solo quello che serve: deploy di servizio e job, push dell'immagine, "agire come" il runtime SA
+gcloud run services add-iam-policy-binding attese --region europe-west1 --project $PROJECT \
+  --member serviceAccount:$SA --role roles/run.developer
+for j in attese-fetch attese-migrate; do
+  gcloud run jobs add-iam-policy-binding $j --region europe-west1 --project $PROJECT \
+    --member serviceAccount:$SA --role roles/run.developer
+done
+gcloud artifacts repositories add-iam-policy-binding cloud-run-source-deploy \
+  --location europe-west1 --project $PROJECT \
+  --member serviceAccount:$SA --role roles/artifactregistry.writer
+gcloud iam service-accounts add-iam-policy-binding $RUNTIME_SA --project $PROJECT \
+  --member serviceAccount:$SA --role roles/iam.serviceAccountUser
+
+gcloud iam workload-identity-pools create github --location global --project $PROJECT
+gcloud iam workload-identity-pools providers create-oidc github \
+  --workload-identity-pool github --location global --project $PROJECT \
+  --issuer-uri https://token.actions.githubusercontent.com \
+  --attribute-mapping "google.subject=assertion.sub,attribute.repository_id=assertion.repository_id,attribute.environment=assertion.environment" \
+  --attribute-condition "assertion.repository_id == '$REPO_ID' && assertion.repository_owner_id == '$OWNER_ID' && assertion.environment == 'production'"
+gcloud iam service-accounts add-iam-policy-binding $SA --project $PROJECT \
+  --role roles/iam.workloadIdentityUser \
+  --member "principalSet://iam.googleapis.com/projects/$NUMBER/locations/global/workloadIdentityPools/github/attribute.repository_id/$REPO_ID"
+```
+
+Si usano gli ID numerici di repository e owner, non il nome: un repo rinominato o ricreato con lo
+stesso nome non eredita i permessi di deploy.
+
+Nel repository GitHub:
+
+- **Variables**: `GCP_PROJECT_ID`, `GCP_WIF_PROVIDER`
+  (`projects/856750471646/locations/global/workloadIdentityPools/github/providers/github`),
+  `GCP_DEPLOY_SA`.
+- **Environment `production`**: revisore obbligatorio, deploy consentito solo dai tag `v*`.

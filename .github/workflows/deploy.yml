@@ -1,0 +1,86 @@
+name: Build & Deploy (Cloud Run)
+
+# Solo sul push di un tag v* (git tag v1.2.3 && git push origin v1.2.3), mai sui branch.
+on:
+  push:
+    tags:
+      - "v*"
+
+# Variabili del repository (Settings → Secrets and variables → Actions → Variables):
+#   GCP_PROJECT_ID     progetto GCP (waiting-list-497918)
+#   GCP_WIF_PROVIDER   projects/<numero>/locations/global/workloadIdentityPools/github/providers/github
+#   GCP_DEPLOY_SA      service account di deploy (github-deploy@<progetto>.iam.gserviceaccount.com)
+# Workload Identity Federation: nessuna chiave JSON. GCP accetta solo token emessi per
+# l'environment "production" di questo repository, che richiede un'approvazione manuale
+# (vedi DEPLOY.md). Stesso schema di azuki-beans/coperni.
+env:
+  REGION: europe-west1
+  IMAGE: europe-west1-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/cloud-run-source-deploy/attese
+
+permissions: {}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SA }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Log in to Artifact Registry
+        run: gcloud auth configure-docker europe-west1-docker.pkg.dev --quiet
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Cloud Run è solo amd64: niente QEMU, niente multi-arch
+      - name: Build & push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:${{ github.ref_name }}
+            ${{ env.IMAGE }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # La configurazione (env, segreti, volume, scheduler) si imposta una volta su GCP
+      # (DEPLOY.md): qui cambia solo l'immagine. Prima le migrazioni, poi servizio e job.
+      - name: Update migrate job
+        run: >
+          gcloud run jobs update attese-migrate
+          --image ${{ env.IMAGE }}:${{ github.ref_name }}
+          --region ${{ env.REGION }} --project ${{ vars.GCP_PROJECT_ID }} --quiet
+
+      - name: Run migrations
+        run: >
+          gcloud run jobs execute attese-migrate --wait
+          --region ${{ env.REGION }} --project ${{ vars.GCP_PROJECT_ID }} --quiet
+
+      - name: Deploy web
+        run: >
+          gcloud run deploy attese
+          --image ${{ env.IMAGE }}:${{ github.ref_name }}
+          --region ${{ env.REGION }} --project ${{ vars.GCP_PROJECT_ID }} --quiet
+
+      - name: Update fetch job
+        run: >
+          gcloud run jobs update attese-fetch
+          --image ${{ env.IMAGE }}:${{ github.ref_name }}
+          --region ${{ env.REGION }} --project ${{ vars.GCP_PROJECT_ID }} --quiet
