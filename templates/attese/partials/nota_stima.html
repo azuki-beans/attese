@@ -1,0 +1,14 @@
+{% load i18n %}<div class="card-footer text-muted small">
+    <i class="bi bi-info-circle me-1"></i>
+    {% translate "La data è solo una stima, non un appuntamento: oggi + i giorni di attesa indicati nei dati raccolti." %}
+    {% with primo=records.0 %}{% if primo.survey_date and primo.publish_date %}
+      {% blocktranslate trimmed with rilevazione=primo.survey_date|date:"SHORT_DATE_FORMAT" pubblicazione=primo.publish_date|date:"SHORT_DATE_FORMAT" %}
+        Dati rilevati il {{ rilevazione }} e pubblicati il {{ pubblicazione }}: da allora la situazione può essere cambiata.
+      {% endblocktranslate %}
+    {% endif %}{% endwith %}
+    {% translate "Per la data effettiva contatta il CUP." %}
+    <span class="float-end">
+      {% translate "Fonte" %}: <a href="https://data.civis.bz.it/{{ LANGUAGE_CODE }}/dataset/southtyrolean-healthservices-waitingtimes"
+               target="_blank" class="text-muted">{% translate "Open Data Alto Adige" %} – CC Zero</a>
+    </span>
+  </div>

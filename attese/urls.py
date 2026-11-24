@@ -9,6 +9,8 @@ from .views import (
     FilterPartialView,
     StatisticsView,
     StructureChartPartialView,
+    StructureDetailView,
+    StructureIndexView,
     StructurePickerPartialView,
 )
 
@@ -19,6 +21,8 @@ urlpatterns = [
     path(_("prestazioni/"), ActivityIndexView.as_view(), name="activity_index"),
     path(_("prestazioni/<str:code>/"), ActivityDetailView.as_view(), name="activity_detail_short"),
     path(_("prestazioni/<str:code>/<slug:slug>/"), ActivityDetailView.as_view(), name="activity_detail"),
+    path(_("strutture/"), StructureIndexView.as_view(), name="structure_index"),
+    path(_("strutture/<slug:nome>/"), StructureDetailView.as_view(), name="structure_detail"),
     path("partials/filter/", FilterPartialView.as_view(), name="filter_partial"),
     path("partials/chart/attivita/", ActivityChartPartialView.as_view(), name="activity_chart_partial"),
     path("partials/chart/struttura/", StructureChartPartialView.as_view(), name="structure_chart_partial"),

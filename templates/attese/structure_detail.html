@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% blocktranslate with nome=sede.nome %}{{ nome }}: tempi di attesa per visite ed esami{% endblocktranslate %}{% endblock %}
+{% block meta_description %}{% if breve %}{% blocktranslate trimmed count n=attese|length with nome=sede.nome citta=sede.citta minimo=breve.waiting_days massimo=lunga.waiting_days data=sede.publish_date|date:"SHORT_DATE_FORMAT" %}
+{{ nome }} ({{ citta }}): tempi di attesa per {{ n }} prestazione, da {{ minimo }} a {{ massimo }} giorni, confrontati con il minimo in Alto Adige. Dati opendata del {{ data }}.
+{% plural %}
+{{ nome }} ({{ citta }}): tempi di attesa per {{ n }} prestazioni, da {{ minimo }} a {{ massimo }} giorni, confrontati con il minimo in Alto Adige. Dati opendata del {{ data }}.
+{% endblocktranslate %}{% else %}{% blocktranslate trimmed with nome=sede.nome citta=sede.citta data=sede.publish_date|date:"SHORT_DATE_FORMAT" %}
+{{ nome }} ({{ citta }}): prestazioni e contatti. Nessun tempo di attesa indicato nei dati opendata del {{ data }}.
+{% endblocktranslate %}{% endif %}{% endblock %}
+{% block canonical_path %}{% url 'structure_detail' sede.slug %}{% endblock %}
+{% block og_title %}{% blocktranslate with nome=sede.nome %}{{ nome }}: tempi di attesa per visite ed esami{% endblocktranslate %}{% endblock %}
+{% block og_description %}{% blocktranslate trimmed count n=attese|length with citta=sede.citta %}
+{{ citta }}: tempi di attesa per {{ n }} prestazione.
+{% plural %}
+{{ citta }}: tempi di attesa per {{ n }} prestazioni.
+{% endblocktranslate %}{% endblock %}
+
+{% block extra_head %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "{{ SITE_URL }}{% url 'dashboard' %}"},
+    {"@type": "ListItem", "position": 2, "name": "{% translate "Strutture" %}", "item": "{{ SITE_URL }}{% url 'structure_index' %}"},
+    {"@type": "ListItem", "position": 3, "name": "{{ sede.nome|escapejs }}"}
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'structure_index' %}">{% translate "Strutture" %}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ sede.nome }}</li>
+  </ol>
+</nav>
+
+<div class="mb-4">
+  <h1 class="h2 fw-bold mb-1">
+    <i class="bi bi-hospital me-2 text-success"></i>{% blocktranslate with nome=sede.nome %}{{ nome }}: tempi di attesa{% endblocktranslate %}
+  </h1>
+  {% if LANGUAGE_CODE == "de" %}
+    <p class="text-muted mb-2" lang="it">{{ sede.principale.description_it }}</p>
+  {% elif sede.principale.description_de and sede.principale.description_de != sede.principale.description_it %}
+    <p class="text-muted mb-2" lang="de">{{ sede.principale.description_de }}</p>
+  {% endif %}
+  <p class="mb-2">
+    {% blocktranslate trimmed count n=records|length with nome=sede.nome citta=sede.citta %}
+      <strong>{{ nome }}</strong> ({{ citta }}) compare nei dati opendata con {{ n }} prestazione.
+    {% plural %}
+      <strong>{{ nome }}</strong> ({{ citta }}) compare nei dati opendata con {{ n }} prestazioni.
+    {% endblocktranslate %}
+    {% if attese|length > 1 %}
+      {% blocktranslate trimmed count giorni=breve.waiting_days with nome=breve.activity_description %}
+        L'attesa più breve è per <strong>{{ nome }}</strong> ({{ giorni }} giorno),
+      {% plural %}
+        L'attesa più breve è per <strong>{{ nome }}</strong> ({{ giorni }} giorni),
+      {% endblocktranslate %}
+      {% blocktranslate trimmed count giorni=lunga.waiting_days with nome=lunga.activity_description %}
+        la più lunga per <strong>{{ nome }}</strong> ({{ giorni }} giorno).
+      {% plural %}
+        la più lunga per <strong>{{ nome }}</strong> ({{ giorni }} giorni).
+      {% endblocktranslate %}
+    {% endif %}
+  </p>
+  <ul class="list-unstyled small text-muted mb-2">
+    {% for s in sede.indirizzi %}
+      <li><i class="bi bi-geo-alt me-1 text-success"></i>{{ s.street }}{% if s.zip %}, {{ s.zip }}{% endif %} {{ s.city }}</li>
+    {% endfor %}
+  </ul>
+  <div class="d-flex flex-wrap gap-3 small text-muted">
+    {% if records.0.survey_date %}
+      <span><i class="bi bi-clipboard2-check me-1 text-success"></i>{% translate "Rilevazione" %}: {{ records.0.survey_date|date:"SHORT_DATE_FORMAT" }}</span>
+    {% endif %}
+    {% if sede.publish_date %}
+      <span><i class="bi bi-cloud-arrow-up me-1 text-success"></i>{% translate "Pubblicazione opendata" %}: {{ sede.publish_date|date:"SHORT_DATE_FORMAT" }}</span>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">{% translate "Prestazione" %}</th>
+            <th class="d-none d-md-table-cell">{% translate "Reparto" %}</th>
+            <th class="text-center">{% translate "Giorni di attesa" %}</th>
+            <th class="text-center">{% translate "Minimo in Alto Adige" %}</th>
+            <th class="text-center">{% blocktranslate %}Data <b>STIMATA</b> disponibilità{% endblocktranslate %}</th>
+            <th>{% translate "Contatto" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in records %}
+            <tr>
+              <td class="ps-3"><a href="{% url 'activity_detail' r.activity_code r.activity_slug %}" class="fw-bold text-reset">{{ r.activity_description }}</a>
+                {% if r.structure.address_name %}<div class="small text-muted d-md-none">{{ r.structure.address_name }}</div>{% endif %}</td>
+              <td class="small text-muted d-none d-md-table-cell">{{ r.structure.address_name }}</td>
+              <td class="text-center">
+                {% if r.waiting_days is not None %}
+                  <span class="fw-bold fs-5">{{ r.waiting_days }}</span><span class="text-muted small"> {% translate "gg" context "giorni" %}</span>
+                {% else %}<span class="text-muted">—</span>{% endif %}
+              </td>
+              <td class="text-center text-muted">
+                {% if r.minimo_provinciale is not None %}{{ r.minimo_provinciale }}<span class="small"> {% translate "gg" context "giorni" %}</span>{% else %}—{% endif %}
+              </td>
+              <td class="text-center">
+                {% if r.estimated_date %}
+                  <span class="badge bg-success fs-6 fw-normal">{{ r.estimated_date|date:"SHORT_DATE_FORMAT" }}</span>
+                {% else %}<span class="text-muted small">{% translate "N/D" %}</span>{% endif %}
+              </td>
+              <td class="small">
+                {% if r.structure.phone %}
+                  <a href="tel:{{ r.structure.phone_link }}" class="text-decoration-none text-nowrap"><i class="bi bi-telephone me-1"></i>{{ r.structure.phone_number }}</a>
+                {% endif %}
+                {% if r.info %}<br><span class="text-muted fst-italic">{{ r.info|truncatechars:80 }}</span>{% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% include "attese/partials/nota_stima.html" %}
+</div>
+
+<div class="d-flex flex-wrap gap-2 mt-4">
+  <a href="{% url 'structure_index' %}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-hospital me-1"></i>{% translate "Tutte le strutture" %}
+  </a>
+  <a href="{% url 'activity_index' %}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-list-ul me-1"></i>{% translate "Tutte le prestazioni" %}
+  </a>
+</div>
+
+<div class="alert alert-warning mt-4 small">
+  <i class="bi bi-exclamation-triangle me-1"></i>
+  {% translate "Progetto amatoriale senza garanzie: per prenotare contatta il CUP." %}
+  <a href="https://www.sabes.it{% if LANGUAGE_CODE == "de" %}/de{% endif %}" target="_blank" class="alert-link">{% translate "Azienda Sanitaria dell'Alto Adige" %}</a> (0471 100 100).
+</div>
+{% endblock %}

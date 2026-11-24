@@ -25,7 +25,7 @@
             <tr class="{% if r.waiting_days is not None %}{% if r.waiting_days <= 15 %}table-days-low{% elif r.waiting_days <= 30 %}table-days-medium{% else %}table-days-high{% endif %}{% endif %}">
               <td class="ps-3 text-muted small">{{ forloop.counter }}</td>
               <td>
-                <strong>{{ r.structure.description }}</strong>
+                <a href="{% url 'structure_detail' r.structure.sede_slug %}" class="fw-bold text-reset">{{ r.structure.description }}</a>
                 {% if r.structure.city %}
                   <br><span class="text-muted small">
                     <i class="bi bi-geo-alt me-1"></i>{{ r.structure.city }}
@@ -70,20 +70,7 @@
       </table>
     </div>
   </div>
-  <div class="card-footer text-muted small">
-    <i class="bi bi-info-circle me-1"></i>
-    {% translate "La data è solo una stima, non un appuntamento: oggi + i giorni di attesa indicati nei dati raccolti." %}
-    {% with primo=records.0 %}{% if primo.survey_date and primo.publish_date %}
-      {% blocktranslate trimmed with rilevazione=primo.survey_date|date:"SHORT_DATE_FORMAT" pubblicazione=primo.publish_date|date:"SHORT_DATE_FORMAT" %}
-        Dati rilevati il {{ rilevazione }} e pubblicati il {{ pubblicazione }}: da allora la situazione può essere cambiata.
-      {% endblocktranslate %}
-    {% endif %}{% endwith %}
-    {% translate "Per la data effettiva contatta il CUP." %}
-    <span class="float-end">
-      {% translate "Fonte" %}: <a href="https://data.civis.bz.it/{{ LANGUAGE_CODE }}/dataset/southtyrolean-healthservices-waitingtimes"
-               target="_blank" class="text-muted">{% translate "Open Data Alto Adige" %} – CC Zero</a>
-    </span>
-  </div>
+  {% include "attese/partials/nota_stima.html" %}
 </div>
 
 {% else %}

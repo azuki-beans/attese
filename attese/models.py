@@ -3,8 +3,9 @@ from datetime import timedelta
 
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import override
 
-from .lingue import Bilingue, slug
+from .lingue import Bilingue, codici_lingua, slug
 
 # CUP provinciale: nell'opendata compare quasi sempre senza prefisso ("100 100")
 TELEFONO_CUP = "0471 100 100"
@@ -60,6 +61,19 @@ class Structure(Bilingue, models.Model):
     @property
     def description(self):
         return self.testo("description")
+
+    @property
+    def sede_slug(self):
+        """Slug della pagina della sede (vedi sedi.py), nella lingua attiva."""
+        return slug(self.description)
+
+    @property
+    def sede_slug_lingue(self):
+        risultato = set()
+        for lingua in codici_lingua():
+            with override(lingua):
+                risultato.add(self.sede_slug)
+        return risultato
 
     @property
     def phone_number(self):
