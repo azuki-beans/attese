@@ -1,15 +1,16 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Tempi di attesa sanitari in Alto Adige – visite ed esami{% endblock %}
+{% block title %}{% translate "Tempi di attesa sanitari in Alto Adige – visite ed esami" %}{% endblock %}
 
 {% block extra_head %}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  "name": "Tempi di attesa sanitari – Alto Adige",
-  "url": "{{ SITE_URL }}/",
-  "inLanguage": "it",
+  "name": "{% translate "Tempi di attesa sanitari – Alto Adige" %}",
+  "url": "{{ SITE_URL }}{% url 'dashboard' %}",
+  "inLanguage": "{{ LANGUAGE_CODE }}",
   "publisher": {
     "@type": "Organization",
     "@id": "https://azukibeans.dev/#org",
@@ -24,35 +25,35 @@
 <div class="row mb-4">
   <div class="col">
     <h1 class="h2 fw-bold mb-1">
-      <i class="bi bi-calendar2-heart me-2 text-success"></i>Tempi di attesa sanitari in Alto Adige
+      <i class="bi bi-calendar2-heart me-2 text-success"></i>{% translate "Tempi di attesa sanitari in Alto Adige" %}
     </h1>
     <p class="text-muted mb-0">
-      Dati aggiornati dall'<a href="https://data.civis.bz.it/it/dataset/southtyrolean-healthservices-waitingtimes" target="_blank">opendata dell'Alto Adige / Südtirol</a>.
-      Seleziona una prestazione per vedere le prime date disponibili.
+      {% translate "Fonte" %}: <a href="https://data.civis.bz.it/{{ LANGUAGE_CODE }}/dataset/southtyrolean-healthservices-waitingtimes" target="_blank">{% translate "Open Data Alto Adige" %}</a>.
+      {% translate "Seleziona una prestazione per vedere le prime date disponibili." %}
     </p>
     <div class="alert alert-warning mt-3 mb-0 py-2 small">
       <i class="bi bi-exclamation-triangle me-1"></i>
-      Progetto amatoriale senza garanzie di correttezza o continuità del servizio.
-      Per prenotazioni e informazioni certe contatta direttamente l'<a href="https://www.sabes.it" target="_blank" class="alert-link">Azienda Sanitaria dell'Alto Adige</a> (CUP: 0471 100 200).
-      &mdash; <a href="https://github.com/azuki-beans/attese" target="_blank" class="alert-link"><i class="bi bi-github me-1"></i>Codice sorgente</a>
+      {% translate "Progetto amatoriale senza garanzie di correttezza o continuità del servizio. Per prenotazioni e informazioni certe contatta direttamente:" %}
+      <a href="https://www.sabes.it{% if LANGUAGE_CODE == "de" %}/de{% endif %}" target="_blank" class="alert-link">{% translate "Azienda Sanitaria dell'Alto Adige" %}</a> ({% translate "CUP" %}: 0471 100 100).
+      &mdash; <a href="https://github.com/azuki-beans/attese" target="_blank" class="alert-link"><i class="bi bi-github me-1"></i>{% translate "Codice sorgente" %}</a>
     </div>
     {% if last_fetch %}
     <div class="mt-2 d-flex flex-wrap gap-3">
       {% if last_fetch.latest_survey_date %}
       <small class="text-muted">
         <i class="bi bi-clipboard2-check me-1 text-success"></i>
-        <strong>Ultima rilevazione dati: {{ last_fetch.latest_survey_date|date:"d/m/Y" }}</strong>
+        <strong>{% translate "Ultima rilevazione dati" %}: {{ last_fetch.latest_survey_date|date:"SHORT_DATE_FORMAT" }}</strong>
       </small>
       {% endif %}
       {% if last_fetch.latest_publish_date %}
       <small class="text-muted">
         <i class="bi bi-cloud-arrow-up me-1 text-success"></i>
-        <strong>Ultimo aggiornamento opendata: {{ last_fetch.latest_publish_date|date:"d/m/Y" }}</strong>
+        <strong>{% translate "Ultimo aggiornamento opendata" %}: {{ last_fetch.latest_publish_date|date:"SHORT_DATE_FORMAT" }}</strong>
       </small>
       {% endif %}
       <small class="text-muted">
         <i class="bi bi-arrow-repeat me-1 text-success"></i>
-        <strong>Ultimo import: {{ last_fetch.fetched_at|date:"d/m/Y H:i" }}</strong>
+        <strong>{% translate "Ultimo import" %}: {{ last_fetch.fetched_at|date:"SHORT_DATETIME_FORMAT" }}</strong>
       </small>
     </div>
     {% endif %}
@@ -62,15 +63,14 @@
 {% if not has_data %}
   <div class="alert alert-warning">
     <i class="bi bi-exclamation-triangle me-2"></i>
-    Nessun dato disponibile. Esegui il comando
-    <code>python manage.py fetch_waitingtimes</code> per importare i dati.
+    {% translate "Nessun dato disponibile." %} <code>python manage.py fetch_waitingtimes</code>
   </div>
 {% endif %}
 
 <div class="card">
   <div class="card-header bg-white d-flex align-items-center gap-2">
     <i class="bi bi-funnel text-success"></i>
-    <span class="fw-semibold">Filtri di ricerca</span>
+    <span class="fw-semibold">{% translate "Filtri di ricerca" %}</span>
   </div>
   <div class="card-body">
     <div class="row g-3 align-items-end">
@@ -78,7 +78,7 @@
       <!-- Select prestazione -->
       <div class="col-md-8">
         <label class="form-label fw-semibold" for="activity-select">
-          <i class="bi bi-clipboard2-pulse me-1"></i>Tipo di prestazione
+          <i class="bi bi-clipboard2-pulse me-1"></i>{% translate "Tipo di prestazione" %}
         </label>
         <select id="activity-select"
                 name="activity_code"
@@ -87,10 +87,10 @@
                 hx-target="#filter-area"
                 hx-indicator="#loading-spinner"
                 hx-trigger="change">
-          <option value="">— Seleziona una prestazione —</option>
+          <option value="">{% translate "— Seleziona una prestazione —" %}</option>
           {% for a in activities %}
             <option value="{{ a.activity_code }}">
-              {{ a.activity_description_it }}
+              {{ a.nome }}
             </option>
           {% endfor %}
         </select>
@@ -100,7 +100,7 @@
       <div class="col-md-1 text-center">
         <div id="loading-spinner" class="htmx-indicator">
           <div class="spinner-border text-success" role="status" style="width:1.5rem;height:1.5rem;">
-            <span class="visually-hidden">Caricamento...</span>
+            <span class="visually-hidden">{% translate "Caricamento..." %}</span>
           </div>
         </div>
       </div>
@@ -114,7 +114,7 @@
   {% if has_data %}
     <div class="text-center text-muted py-5">
       <i class="bi bi-arrow-up-circle fs-1 d-block mb-2 text-success opacity-50"></i>
-      Seleziona una prestazione per vedere le date disponibili.
+      {% translate "Seleziona una prestazione per vedere le date disponibili." %}
     </div>
   {% endif %}
 </div>
@@ -123,7 +123,7 @@
 <div class="card mt-4">
   <div class="card-header bg-white d-flex align-items-center gap-2">
     <i class="bi bi-list-ul text-success"></i>
-    <h2 class="h6 fw-semibold mb-0">Tutte le prestazioni</h2>
+    <h2 class="h6 fw-semibold mb-0">{% translate "Tutte le prestazioni" %}</h2>
   </div>
   <div class="card-body">
     {% include "attese/partials/activity_links.html" %}

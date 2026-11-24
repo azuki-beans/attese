@@ -1,4 +1,4 @@
-{% if labels != "[]" %}
+{% load i18n %}{% if labels != "[]" %}
 <p class="text-muted small mb-2">
   <i class="bi bi-clipboard2-pulse me-1"></i>{{ activity_label }}
 </p>
@@ -7,9 +7,9 @@
           data-chart="1"
           data-labels="{{ labels }}"
           data-data="{{ data }}"
-          data-chart-label="Media giorni di attesa – {{ activity_label }}">
+          data-chart-label="{% translate "Media giorni di attesa" %} – {{ activity_label }}">
   </canvas>
 </div>
 {% else %}
-<p class="text-muted text-center py-3">Nessun dato disponibile per questa prestazione.</p>
+<p class="text-muted text-center py-3">{% translate "Nessun dato disponibile per questa prestazione." %}</p>
 {% endif %}

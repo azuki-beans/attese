@@ -5,28 +5,29 @@ URL (nessuno script dei social) e copia del link. Condivide il canonical della p
 link è sempre quello pulito del dominio pubblico.
 Uso: {% include "partials/condividi.html" with classe="btn btn-outline-light" %}
 {% endcomment %}
+{% load i18n %}
 <div class="condividi">
   <button type="button" id="condividi-btn" class="{{ classe|default:'btn btn-outline-secondary' }} condividi-btn"
-          title="Condividi" aria-haspopup="menu" aria-controls="menu-condividi" aria-expanded="false">
+          title="{% translate "Condividi" %}" aria-haspopup="menu" aria-controls="menu-condividi" aria-expanded="false">
     <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
       <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
       <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" stroke="currentColor" stroke-width="2"/>
     </svg>
-    <span class="d-none d-sm-inline">Condividi</span>
+    <span class="d-none d-sm-inline">{% translate "Condividi" %}</span>
   </button>
-  <div class="menu-condividi" id="menu-condividi" role="menu" aria-label="Condividi" hidden>
-    <button type="button" role="menuitem" data-azione="nativo" data-colore hidden>Condividi con…</button>
+  <div class="menu-condividi" id="menu-condividi" role="menu" aria-label="{% translate "Condividi" %}" hidden>
+    <button type="button" role="menuitem" data-azione="nativo" data-colore hidden>{% translate "Condividi con…" %}</button>
     <div class="reti">
       <a role="menuitem" data-rete="whatsapp" data-colore style="--colore:#25d366" target="_blank" rel="noopener">WhatsApp</a>
       <a role="menuitem" data-rete="telegram" data-colore style="--colore:#229ed9" target="_blank" rel="noopener">Telegram</a>
-      <a role="menuitem" data-rete="email" data-colore>Email</a>
+      <a role="menuitem" data-rete="email" data-colore>{% translate "Email" %}</a>
       <a role="menuitem" data-rete="facebook" data-colore style="--colore:#1877f2" target="_blank" rel="noopener">Facebook</a>
       <a role="menuitem" data-rete="x" data-colore style="--colore:#000" target="_blank" rel="noopener">X</a>
       <a role="menuitem" data-rete="linkedin" data-colore style="--colore:#0a66c2" target="_blank" rel="noopener">LinkedIn</a>
       <a role="menuitem" data-rete="bluesky" data-colore style="--colore:#1185fe" target="_blank" rel="noopener">Bluesky</a>
     </div>
     <hr>
-    <button type="button" role="menuitem" data-azione="copia">Copia link</button>
+    <button type="button" role="menuitem" data-azione="copia">{% translate "Copia link" %}</button>
     <div class="stato" id="condividi-stato" aria-live="polite"></div>
   </div>
 </div>
@@ -130,9 +131,9 @@ Uso: {% include "partials/condividi.html" with classe="btn btn-outline-light" %}
     menu.querySelector('[data-azione="copia"]').addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(dati().url);
-        stato.textContent = 'Link copiato.';
+        stato.textContent = '{% filter escapejs %}{% translate "Link copiato." %}{% endfilter %}';
       } catch (e) {
-        stato.textContent = 'Copia non riuscita: copia l\'indirizzo dalla barra del browser.';
+        stato.textContent = '{% filter escapejs %}{% translate "Copia non riuscita: copia l'indirizzo dalla barra del browser." %}{% endfilter %}';
       }
     });
   })();

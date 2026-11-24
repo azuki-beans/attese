@@ -39,6 +39,8 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    # la lingua viene solo dal prefisso dell'URL (nessun prefisso = italiano), mai da browser o cookie
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -63,6 +65,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "attese.context_processors.site",
+                "attese.context_processors.lingue",
             ],
         },
     },
@@ -106,7 +109,6 @@ LANGUAGE_CODE = "it"
 LANGUAGES = [
     ("it", "Italiano"),
     ("de", "Deutsch"),
-    ("en", "English"),
 ]
 LOCALE_PATHS = [BASE_DIR / "locale"]
 TIME_ZONE = "Europe/Rome"

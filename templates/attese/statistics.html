@@ -1,9 +1,10 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Statistiche – Tempi di attesa Alto Adige{% endblock %}
-{% block meta_description %}Andamento nel tempo dei tempi di attesa medi per visite ed esami in Alto Adige, per prestazione e per struttura sanitaria.{% endblock %}
-{% block og_title %}Statistiche – Tempi di attesa in Alto Adige{% endblock %}
-{% block og_description %}Come cambiano nel tempo i tempi di attesa per visite ed esami in Alto Adige, per prestazione e per struttura.{% endblock %}
+{% block title %}{% translate "Statistiche – Tempi di attesa Alto Adige" %}{% endblock %}
+{% block meta_description %}{% translate "Andamento nel tempo dei tempi di attesa medi per visite ed esami in Alto Adige, per prestazione e per struttura sanitaria." %}{% endblock %}
+{% block og_title %}{% translate "Statistiche – Tempi di attesa in Alto Adige" %}{% endblock %}
+{% block og_description %}{% translate "Come cambiano nel tempo i tempi di attesa per visite ed esami in Alto Adige, per prestazione e per struttura." %}{% endblock %}
 
 {% block extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
@@ -16,15 +17,15 @@
 <div class="row mb-4">
   <div class="col">
     <h1 class="h2 fw-bold mb-1">
-      <i class="bi bi-graph-up-arrow me-2 text-success"></i>Statistiche e variazioni nel tempo
+      <i class="bi bi-graph-up-arrow me-2 text-success"></i>{% translate "Statistiche e variazioni nel tempo" %}
     </h1>
     <p class="text-muted mb-0">
-      Andamento dei tempi medi di attesa in base alle pubblicazioni opendata.
+      {% translate "Andamento dei tempi medi di attesa in base alle pubblicazioni opendata." %}
     </p>
   </div>
   <div class="col-auto d-flex align-items-center">
     <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">
-      <i class="bi bi-arrow-left me-1"></i>Torna alla ricerca
+      <i class="bi bi-arrow-left me-1"></i>{% translate "Torna alla ricerca" %}
     </a>
   </div>
 </div>
@@ -33,7 +34,7 @@
 <div class="card mb-4">
   <div class="card-header bg-white d-flex align-items-center gap-2">
     <i class="bi bi-activity text-success"></i>
-    <span class="fw-semibold">Media globale giorni di attesa nel tempo</span>
+    <span class="fw-semibold">{% translate "Media globale giorni di attesa nel tempo" %}</span>
   </div>
   <div class="card-body">
     {% if global_data != "[]" %}
@@ -41,7 +42,7 @@
       <canvas id="globalChart"></canvas>
     </div>
     {% else %}
-    <p class="text-muted text-center py-4">Dati insufficienti per il grafico.</p>
+    <p class="text-muted text-center py-4">{% translate "Dati insufficienti per il grafico." %}</p>
     {% endif %}
   </div>
 </div>
@@ -50,13 +51,13 @@
 <div class="card mb-4">
   <div class="card-header bg-white d-flex align-items-center gap-2">
     <i class="bi bi-clipboard2-pulse text-success"></i>
-    <span class="fw-semibold">Media giorni di attesa per prestazione</span>
+    <span class="fw-semibold">{% translate "Media giorni di attesa per prestazione" %}</span>
   </div>
   <div class="card-body">
     <div class="row g-3 mb-3">
       <div class="col-md-7">
         <label class="form-label fw-semibold" for="activity-select-stats">
-          Tipo di prestazione
+          {% translate "Tipo di prestazione" %}
         </label>
         <select id="activity-select-stats"
                 name="activity_code"
@@ -65,22 +66,22 @@
                 hx-target="#activity-chart-area"
                 hx-indicator="#spinner-activity"
                 hx-trigger="change">
-          <option value="">— Seleziona una prestazione —</option>
+          <option value="">{% translate "— Seleziona una prestazione —" %}</option>
           {% for a in activities %}
-            <option value="{{ a.activity_code }}">{{ a.activity_description_it }}</option>
+            <option value="{{ a.activity_code }}">{{ a.nome }}</option>
           {% endfor %}
         </select>
       </div>
       <div class="col-auto d-flex align-items-end">
         <div id="spinner-activity" class="htmx-indicator">
           <div class="spinner-border text-success" role="status" style="width:1.5rem;height:1.5rem;">
-            <span class="visually-hidden">Caricamento...</span>
+            <span class="visually-hidden">{% translate "Caricamento..." %}</span>
           </div>
         </div>
       </div>
     </div>
     <div id="activity-chart-area">
-      <p class="text-muted text-center py-3">Seleziona una prestazione per visualizzare il grafico.</p>
+      <p class="text-muted text-center py-3">{% translate "Seleziona una prestazione per visualizzare il grafico." %}</p>
     </div>
   </div>
 </div>
@@ -89,12 +90,12 @@
 <div class="card mb-4">
   <div class="card-header bg-white d-flex align-items-center gap-2">
     <i class="bi bi-hospital text-success"></i>
-    <span class="fw-semibold">Andamento tempo di attesa: prestazione in una struttura</span>
+    <span class="fw-semibold">{% translate "Andamento tempo di attesa: prestazione in una struttura" %}</span>
   </div>
   <div class="card-body">
     <div class="row g-3 mb-3">
       <div class="col-md-5">
-        <label class="form-label fw-semibold" for="activity-select-struct">Prestazione</label>
+        <label class="form-label fw-semibold" for="activity-select-struct">{% translate "Prestazione" %}</label>
         <select id="activity-select-struct"
                 name="activity_code"
                 class="form-select"
@@ -102,27 +103,27 @@
                 hx-target="#structure-select-area"
                 hx-indicator="#spinner-struct"
                 hx-trigger="change">
-          <option value="">— Seleziona —</option>
+          <option value="">{% translate "— Seleziona —" %}</option>
           {% for a in activities %}
-            <option value="{{ a.activity_code }}">{{ a.activity_description_it }}</option>
+            <option value="{{ a.activity_code }}">{{ a.nome }}</option>
           {% endfor %}
         </select>
       </div>
       <div class="col-md-5" id="structure-select-area">
-        <label class="form-label fw-semibold text-muted">Struttura</label>
-        <select class="form-select" disabled><option>— Prima seleziona una prestazione —</option></select>
+        <label class="form-label fw-semibold text-muted">{% translate "Struttura" %}</label>
+        <select class="form-select" disabled><option>{% translate "— Prima seleziona una prestazione —" %}</option></select>
       </div>
       <!-- il partial sostituisce structure-select-area con un select abilitato -->
       <div class="col-auto d-flex align-items-end">
         <div id="spinner-struct" class="htmx-indicator">
           <div class="spinner-border text-success" role="status" style="width:1.5rem;height:1.5rem;">
-            <span class="visually-hidden">Caricamento...</span>
+            <span class="visually-hidden">{% translate "Caricamento..." %}</span>
           </div>
         </div>
       </div>
     </div>
     <div id="structure-chart-area">
-      <p class="text-muted text-center py-3">Seleziona prestazione e struttura per visualizzare il grafico.</p>
+      <p class="text-muted text-center py-3">{% translate "Seleziona prestazione e struttura per visualizzare il grafico." %}</p>
     </div>
   </div>
 </div>
@@ -161,18 +162,18 @@ function makeLineChart(canvasId, labels, data, label) {
         legend: { display: false },
         tooltip: {
           callbacks: {
-            label: ctx => `${ctx.parsed.y} giorni`
+            label: ctx => `${ctx.parsed.y} {% filter escapejs %}{% translate "giorni" %}{% endfilter %}`
           }
         }
       },
       scales: {
         y: {
           beginAtZero: false,
-          title: { display: true, text: 'Giorni medi di attesa' },
+          title: { display: true, text: '{% filter escapejs %}{% translate "Giorni medi di attesa" %}{% endfilter %}' },
           ticks: { precision: 0 }
         },
         x: {
-          title: { display: true, text: 'Data pubblicazione opendata' }
+          title: { display: true, text: '{% filter escapejs %}{% translate "Data pubblicazione opendata" %}{% endfilter %}' }
         }
       }
     }
@@ -184,7 +185,7 @@ makeLineChart(
   'globalChart',
   JSON.parse(document.getElementById('global-labels').textContent),
   JSON.parse(document.getElementById('global-data').textContent),
-  'Media globale giorni di attesa'
+  '{% filter escapejs %}{% translate "Media globale giorni di attesa" %}{% endfilter %}'
 );
 
 // Inizializza grafici iniettati da HTMX

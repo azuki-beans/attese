@@ -38,6 +38,17 @@ jobs:
           python manage.py check --deploy --fail-level ERROR
           python manage.py makemigrations --check --dry-run
 
+      - name: Traduzioni aggiornate e complete
+        run: |
+          sudo apt-get install -y --no-install-recommends gettext
+          python manage.py makemessages -l de --no-location --no-wrap
+          git diff -I 'POT-Creation-Date' --exit-code locale/ \
+            || { echo "::error::locale/ non aggiornato: lanciare makemessages e tradurre"; exit 1; }
+          po=locale/de/LC_MESSAGES/django.po
+          [ -z "$(msgattrib --untranslated --no-obsolete $po)" ] || { echo "::error::testi non tradotti in $po"; exit 1; }
+          [ -z "$(msgattrib --only-fuzzy --no-obsolete $po)" ] || { echo "::error::traduzioni fuzzy in $po"; exit 1; }
+          msgfmt --check -o /dev/null $po
+
       - name: Vulnerabilità note (pip-audit)
         run: |
           pip freeze --exclude-editable > /tmp/requirements.txt

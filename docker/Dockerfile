@@ -19,6 +19,18 @@ RUN poetry install --only main --no-interaction --no-ansi --no-root \
   && rm -rf "$POETRY_CACHE_DIR"
 
 
+# --- translations: .po -> .mo con gettext, che non entra nell'immagine finale ----
+FROM python:3.14-slim AS translations
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends gettext \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY locale ./locale
+RUN find locale -name '*.po' -exec sh -c 'msgfmt --check -o "${1%.po}.mo" "$1"' _ {} \;
+
+
 # --- runtime -----------------------------------------------------------------
 FROM python:3.14-slim
 
@@ -44,6 +56,7 @@ WORKDIR /app
 
 # Codice: cosa entra lo decide .dockerignore
 COPY . .
+COPY --from=translations /app/locale ./locale
 
 # Chiave fittizia solo per collectstatic: quella vera arriva a runtime
 RUN SECRET_KEY=collectstatic-only python manage.py collectstatic --noinput

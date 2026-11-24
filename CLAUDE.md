@@ -25,6 +25,24 @@ self-hosted e su Google Cloud Run).
 Nessun modello utente custom: l'accesso a `/django-admin/` usa allauth + Google OAuth, ma solo per
 utenti già `is_staff=True` esistenti (vedi `accounts/adapters.py`) — non c'è registrazione pubblica.
 
+## Lingue (italiano e tedesco)
+
+- `i18n_patterns` con `prefix_default_language=False`: italiano senza prefisso, tedesco sotto `/de/` con
+  percorsi tradotti nel `.po` (`/de/leistungen/…`, `/de/statistik/`). La lingua viene **solo dall'URL**:
+  niente cambi automatici in base al browser o a cookie. `sitemap.xml` e `robots.txt` restano fuori.
+- Testi sorgente in italiano (`{% translate %}`), tedesco in `locale/de/LC_MESSAGES/django.po`. Dopo ogni
+  modifica: `makemessages -l de --no-location --no-wrap` (opzioni uguali in CI, che controlla che il
+  `.po` sia aggiornato e completo). I `.mo` non si versionano: li compila il Dockerfile, in locale
+  `compilemessages -l de`.
+- Dati bilingui in `attese/lingue.py`: `Bilingue.testo()` sui modelli (`record.activity_description`,
+  `structure.city`…) e `localizzato()` nelle query; se il tedesco manca si mostra l'italiano. `slug()`
+  rende gli umlaut come `ae/oe/ue/ss`, solo in tedesco.
+- `lingue_alternative` (context processor) alimenta hreflang e pulsante IT/DE; la pagina di una
+  prestazione passa le proprie, perché cambia anche lo slug.
+- Data stimata = **oggi** + giorni di attesa (scelta confermata il 24/11/2026): i dati escono circa una
+  volta al mese, quindi sotto la tabella si dice che è una stima e si riportano le date di rilevazione
+  e pubblicazione.
+
 ## Note specifiche del progetto
 
 - **Rinominato da `waitimes`/`waittimes` ad `attese`** (rename completo: app Django, DB, immagine

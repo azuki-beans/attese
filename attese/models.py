@@ -1,4 +1,13 @@
+import re
+from datetime import timedelta
+
 from django.db import models
+from django.utils import timezone
+
+from .lingue import Bilingue, slug
+
+# CUP provinciale: nell'opendata compare quasi sempre senza prefisso ("100 100")
+TELEFONO_CUP = "0471 100 100"
 
 
 class DataFetchLog(models.Model):
@@ -21,7 +30,7 @@ class DataFetchLog(models.Model):
         return f"Fetch {self.fetched_at:%Y-%m-%d %H:%M} – {self.new_records_count} nuovi record"
 
 
-class Structure(models.Model):
+class Structure(Bilingue, models.Model):
     """
     Una struttura sanitaria dell'Alto Adige.
     Viene aggiornata tramite il management command fetch_waitingtimes.
@@ -30,7 +39,8 @@ class Structure(models.Model):
     description_de = models.CharField(max_length=300, verbose_name="Struktur (DE)", blank=True)
     address_name_it = models.CharField(max_length=300, blank=True, verbose_name="Reparto (IT)")
     address_name_de = models.CharField(max_length=300, blank=True, verbose_name="Abteilung (DE)")
-    street_it = models.CharField(max_length=200, blank=True, verbose_name="Via")
+    street_it = models.CharField(max_length=200, blank=True, verbose_name="Via (IT)")
+    street_de = models.CharField(max_length=200, blank=True, verbose_name="Straße (DE)")
     zip = models.CharField(max_length=10, blank=True, verbose_name="CAP")
     city_it = models.CharField(max_length=100, blank=True, verbose_name="Città (IT)")
     city_de = models.CharField(max_length=100, blank=True, verbose_name="Stadt (DE)")
@@ -47,8 +57,34 @@ class Structure(models.Model):
     def __str__(self):
         return self.description_it
 
+    @property
+    def description(self):
+        return self.testo("description")
 
-class WaitingRecord(models.Model):
+    @property
+    def phone_number(self):
+        """Telefono da mostrare: il CUP è completato col prefisso, gli altri restano come nei dati."""
+        return TELEFONO_CUP if re.sub(r"\D", "", self.phone) == "100100" else self.phone
+
+    @property
+    def phone_link(self):
+        """Solo cifre del primo numero, per `tel:` (nei dati ci sono "0473/735020" e "0474 581136 - 581137")."""
+        return re.sub(r"\D", "", self.phone_number.split(" - ")[0])
+
+    @property
+    def address_name(self):
+        return self.testo("address_name")
+
+    @property
+    def street(self):
+        return self.testo("street")
+
+    @property
+    def city(self):
+        return self.testo("city")
+
+
+class WaitingRecord(Bilingue, models.Model):
     """
     Un record dal dataset opendata dei tempi di attesa sanitari dell'Alto Adige.
     Viene aggiornato tramite il management command fetch_waitingtimes.
@@ -76,8 +112,19 @@ class WaitingRecord(models.Model):
 
     @property
     def estimated_date(self):
-        """Data stimata di disponibilità = oggi + giorni di attesa."""
-        if self.waiting_days is not None:
-            from datetime import date, timedelta
-            return date.today() + timedelta(days=self.waiting_days)
-        return None
+        """Stima: oggi + giorni di attesa rilevati (i dati escono circa una volta al mese)."""
+        if self.waiting_days is None:
+            return None
+        return timezone.localdate() + timedelta(days=self.waiting_days)
+
+    @property
+    def activity_description(self):
+        return self.testo("activity_description")
+
+    @property
+    def activity_slug(self):
+        return slug(self.activity_description)
+
+    @property
+    def info(self):
+        return self.testo("info")

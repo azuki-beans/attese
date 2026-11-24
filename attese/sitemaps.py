@@ -4,8 +4,8 @@ from django.conf import settings
 from django.contrib.sitemaps import Sitemap
 from django.db.models import Max
 from django.urls import reverse
-from django.utils.text import slugify
 
+from .lingue import slug, tedesco
 from .models import WaitingRecord
 
 
@@ -13,13 +13,23 @@ class SiteUrlSitemap(Sitemap):
     """
     Dominio e schema presi da SITE_URL, non dal modello Site (che serve solo ad allauth):
     così la sitemap punta sempre al dominio pubblico, anche se la richiesta arriva da *.run.app.
+    Ogni pagina c'è in tutte le lingue, con i rimandi hreflang.
     """
+
+    i18n = True
+    alternates = True
+    x_default = True
 
     def get_protocol(self, protocol=None):
         return urlsplit(settings.SITE_URL).scheme or "https"
 
     def get_domain(self, site=None):
         return urlsplit(settings.SITE_URL).netloc
+
+
+def _slug_prestazione(item):
+    nome_de = item["activity_description_de"].strip() if tedesco() else ""
+    return slug(nome_de or item["activity_description_it"])
 
 
 class StaticSitemap(SiteUrlSitemap):
@@ -44,7 +54,7 @@ class ActivitySitemap(SiteUrlSitemap):
         return (
             WaitingRecord.objects
             .filter(publish_date=latest)
-            .values("activity_code", "activity_description_it", "publish_date")
+            .values("activity_code", "activity_description_it", "activity_description_de", "publish_date")
             .distinct()
             .order_by("activity_code")
         )
@@ -52,7 +62,7 @@ class ActivitySitemap(SiteUrlSitemap):
     def location(self, item):
         return reverse("activity_detail", kwargs={
             "code": item["activity_code"],
-            "slug": slugify(item["activity_description_it"]),
+            "slug": _slug_prestazione(item),
         })
 
     def lastmod(self, item):
