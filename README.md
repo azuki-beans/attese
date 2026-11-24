@@ -35,7 +35,7 @@ dati mostrati.**
 Per prenotare una prestazione o ottenere informazioni certe sui tempi di attesa, contatta
 direttamente l'**Azienda Sanitaria dell'Alto Adige**:
 - Sito: [www.sabes.it](https://www.sabes.it)
-- CUP (prenotazioni): 0471 100 200
+- CUP (prenotazioni): 0471 100 100
 
 ## Stack tecnico
 
