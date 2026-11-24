@@ -98,15 +98,10 @@ class WaitingRecord(Bilingue, models.Model):
 
     @property
     def estimated_date(self):
-        """Data stimata di disponibilità = data di pubblicazione dei dati + giorni di attesa."""
-        if self.waiting_days is None or self.publish_date is None:
+        """Stima: oggi + giorni di attesa rilevati (i dati escono circa una volta al mese)."""
+        if self.waiting_days is None:
             return None
-        return self.publish_date + timedelta(days=self.waiting_days)
-
-    @property
-    def estimated_date_passed(self):
-        """I dati escono circa una volta al mese: con attese brevi la data stimata può essere già passata."""
-        return self.estimated_date is not None and self.estimated_date < timezone.localdate()
+        return timezone.localdate() + timedelta(days=self.waiting_days)
 
     @property
     def activity_description(self):

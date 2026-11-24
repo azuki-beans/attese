@@ -39,8 +39,9 @@ utenti già `is_staff=True` esistenti (vedi `accounts/adapters.py`) — non c'è
   rende gli umlaut come `ae/oe/ue/ss`, solo in tedesco.
 - `lingue_alternative` (context processor) alimenta hreflang e pulsante IT/DE; la pagina di una
   prestazione passa le proprie, perché cambia anche lo slug.
-- Data stimata = **pubblicazione** + giorni di attesa (scelta del 24/11/2026). I dati escono circa una
-  volta al mese: se la data è già passata è in grigio con la nota.
+- Data stimata = **oggi** + giorni di attesa (scelta confermata il 24/11/2026): i dati escono circa una
+  volta al mese, quindi sotto la tabella si dice che è una stima e si riportano le date di rilevazione
+  e pubblicazione.
 
 ## Note specifiche del progetto
 

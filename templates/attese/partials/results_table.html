@@ -46,10 +46,9 @@
               </td>
               <td class="text-center">
                 {% if r.estimated_date %}
-                  <span class="badge {% if r.estimated_date_passed %}bg-secondary{% else %}bg-success{% endif %} fs-6 fw-normal">
+                  <span class="badge bg-success fs-6 fw-normal">
                     {{ r.estimated_date|date:"SHORT_DATE_FORMAT" }}
                   </span>
-                  {% if r.estimated_date_passed %}<br><span class="text-muted small">{% translate "data già passata" %}</span>{% endif %}
                 {% else %}
                   <span class="text-muted small">{% translate "N/D" %}</span>
                 {% endif %}
@@ -73,7 +72,13 @@
   </div>
   <div class="card-footer text-muted small">
     <i class="bi bi-info-circle me-1"></i>
-    {% translate "La data stimata è calcolata come: data pubblicazione dati + giorni di attesa. Aggiornamento dati: quotidiano." %}
+    {% translate "La data è solo una stima, non un appuntamento: oggi + i giorni di attesa indicati nei dati raccolti." %}
+    {% with primo=records.0 %}{% if primo.survey_date and primo.publish_date %}
+      {% blocktranslate trimmed with rilevazione=primo.survey_date|date:"SHORT_DATE_FORMAT" pubblicazione=primo.publish_date|date:"SHORT_DATE_FORMAT" %}
+        Dati rilevati il {{ rilevazione }} e pubblicati il {{ pubblicazione }}: da allora la situazione può essere cambiata.
+      {% endblocktranslate %}
+    {% endif %}{% endwith %}
+    {% translate "Per la data effettiva contatta il CUP." %}
     <span class="float-end">
       {% translate "Fonte" %}: <a href="https://data.civis.bz.it/{{ LANGUAGE_CODE }}/dataset/southtyrolean-healthservices-waitingtimes"
                target="_blank" class="text-muted">{% translate "Open Data Alto Adige" %} – CC Zero</a>

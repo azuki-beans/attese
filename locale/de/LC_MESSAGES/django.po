@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: attese\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-24 22:13+0100\n"
+"POT-Creation-Date: 2026-11-24 22:32+0100\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -182,7 +182,7 @@ msgid "Giorni di attesa"
 msgstr "Wartetage"
 
 msgid "Data <b>STIMATA</b> disponibilità"
-msgstr "<b>VORAUSSICHTLICHER</b> Termin"
+msgstr "<b>GESCHÄTZTER</b> Termin"
 
 msgid "Contatto"
 msgstr "Kontakt"
@@ -191,14 +191,18 @@ msgctxt "giorni"
 msgid "gg"
 msgstr "Tg."
 
-msgid "data già passata"
-msgstr "Datum bereits vergangen"
-
 msgid "N/D"
 msgstr "k. A."
 
-msgid "La data stimata è calcolata come: data pubblicazione dati + giorni di attesa. Aggiornamento dati: quotidiano."
-msgstr "Der voraussichtliche Termin ergibt sich aus dem Veröffentlichungsdatum der Daten plus den Wartetagen. Aktualisierung der Daten: täglich."
+msgid "La data è solo una stima, non un appuntamento: oggi + i giorni di attesa indicati nei dati raccolti."
+msgstr "Das Datum ist nur eine Schätzung, kein Termin: heute plus die in den erhobenen Daten angegebenen Wartetage."
+
+#, python-format
+msgid "Dati rilevati il %(rilevazione)s e pubblicati il %(pubblicazione)s: da allora la situazione può essere cambiata."
+msgstr "Daten erhoben am %(rilevazione)s und veröffentlicht am %(pubblicazione)s: Seither kann sich die Lage geändert haben."
+
+msgid "Per la data effettiva contatta il CUP."
+msgstr "Den tatsächlichen Termin erfahren Sie bei der Einheitlichen Landesvormerkungsstelle (ELVS)."
 
 msgid "Nessun dato trovato per i filtri selezionati."
 msgstr "Keine Daten für die gewählten Filter gefunden."
