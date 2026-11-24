@@ -43,6 +43,13 @@ utenti già `is_staff=True` esistenti (vedi `accounts/adapters.py`) — non c'è
   volta al mese, quindi sotto la tabella si dice che è una stima e si riportano le date di rilevazione
   e pubblicazione.
 
+## Pagine per sede (`attese/sedi.py`)
+
+`/strutture/<slug>/` e `/de/einrichtungen/<slug>/`: ogni reparto nei dati è una `Structure`, `Sede` raggruppa
+quelli con lo stesso nome italiano. Sotto `MIN_ATTESE` (3) prestazioni con attesa la pagina resta
+raggiungibile ma è `noindex` e fuori dalla sitemap, perché quasi vuota. Uno slug nell'altra lingua
+rimanda (301) a quello canonico.
+
 ## Note specifiche del progetto
 
 - **Rinominato da `waitimes`/`waittimes` ad `attese`** (rename completo: app Django, DB, immagine

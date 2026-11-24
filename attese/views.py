@@ -1,7 +1,7 @@
 import json
 
 from django.conf import settings
-from django.db.models import Avg, Max
+from django.db.models import Avg, Max, Min
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -10,6 +10,7 @@ from django.views import View
 
 from .lingue import codici_lingua, localizzato, slug
 from .models import DataFetchLog, Structure, WaitingRecord
+from .sedi import sedi_attuali, trova_sede, ultima_pubblicazione
 
 
 def latest_records(activity_code):
@@ -48,6 +49,15 @@ def current_activities():
 def _nome_prestazione(code):
     record = WaitingRecord.objects.filter(activity_code=code).order_by("-publish_date").first()
     return record.activity_description if record else code
+
+
+def _alternative(nome_url, argomenti):
+    """La stessa pagina nelle altre lingue, quando cambia anche lo slug e non solo il prefisso."""
+    alternative = {}
+    for lingua in codici_lingua():
+        with override(lingua):
+            alternative[lingua] = reverse(nome_url, args=argomenti())
+    return alternative
 
 
 class DashboardView(View):
@@ -93,18 +103,57 @@ class ActivityDetailView(View):
         if slug != activity.activity_slug:
             return redirect("activity_detail", code=code, slug=activity.activity_slug, permanent=True)
 
-        # la stessa prestazione nelle altre lingue: cambia anche lo slug, non solo il prefisso
-        alternative = {}
-        for lingua in codici_lingua():
-            with override(lingua):
-                alternative[lingua] = reverse("activity_detail", args=[code, activity.activity_slug])
-
         best = next((r for r in records if r.waiting_days is not None), None)
         return render(request, "attese/activity_detail.html", {
             "activity": activity,
             "records": records,
             "best": best,
-            "lingue_alternative": alternative,
+            "lingue_alternative": _alternative("activity_detail", lambda: [code, activity.activity_slug]),
+        })
+
+
+class StructureIndexView(View):
+    """Elenco delle sedi per città, con un link alla pagina di ciascuna."""
+
+    def get(self, request):
+        sedi = sorted(sedi_attuali(), key=lambda s: (slug(s.citta), s.slug))
+        return render(request, "attese/structure_index.html", {"sedi": sedi})
+
+
+class StructureDetailView(View):
+    """
+    Pagina pubblica di una sede con tutte le sue prestazioni, per ricerche tipo
+    "tempi di attesa ospedale di Merano". Il minimo provinciale permette il confronto.
+    """
+
+    def get(self, request, nome):
+        sede = trova_sede(nome)
+        if sede is None:
+            raise Http404("Struttura non trovata")
+        if nome != sede.slug:
+            return redirect("structure_detail", nome=sede.slug, permanent=True)
+
+        minimi = dict(
+            WaitingRecord.objects
+            .filter(publish_date=sede.publish_date, waiting_days__isnull=False)
+            .order_by()
+            .values("activity_code")
+            .annotate(minimo=Min("waiting_days"))
+            .values_list("activity_code", "minimo")
+        )
+        righe = sorted(sede.records, key=lambda r: r.activity_slug)
+        for r in righe:
+            r.minimo_provinciale = minimi.get(r.activity_code)
+
+        attese = sede.con_attesa
+        return render(request, "attese/structure_detail.html", {
+            "sede": sede,
+            "records": righe,
+            "attese": attese,
+            "breve": attese[0] if attese else None,
+            "lunga": attese[-1] if attese else None,
+            "noindex": not sede.indicizzabile or sede.publish_date != ultima_pubblicazione(),
+            "lingue_alternative": _alternative("structure_detail", lambda: [sede.slug]),
         })
 
 

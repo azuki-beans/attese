@@ -7,6 +7,7 @@ from django.urls import reverse
 
 from .lingue import slug, tedesco
 from .models import WaitingRecord
+from .sedi import sedi_attuali
 
 
 class SiteUrlSitemap(Sitemap):
@@ -36,7 +37,7 @@ class StaticSitemap(SiteUrlSitemap):
     changefreq = "daily"
 
     def items(self):
-        return ["dashboard", "activity_index", "statistics"]
+        return ["dashboard", "activity_index", "structure_index", "statistics"]
 
     def location(self, item):
         return reverse(item)
@@ -69,4 +70,18 @@ class ActivitySitemap(SiteUrlSitemap):
         return item["publish_date"]
 
 
-sitemaps = {"static": StaticSitemap, "prestazioni": ActivitySitemap}
+class StructureSitemap(SiteUrlSitemap):
+    changefreq = "weekly"
+    priority = 0.8
+
+    def items(self):
+        return [sede for sede in sedi_attuali() if sede.indicizzabile]
+
+    def location(self, item):
+        return reverse("structure_detail", args=[item.slug])
+
+    def lastmod(self, item):
+        return item.publish_date
+
+
+sitemaps = {"static": StaticSitemap, "prestazioni": ActivitySitemap, "strutture": StructureSitemap}

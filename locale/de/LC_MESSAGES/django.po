@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: attese\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-24 22:32+0100\n"
+"POT-Creation-Date: 2026-11-24 23:23+0100\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -21,6 +21,12 @@ msgstr "leistungen/<str:code>/"
 
 msgid "prestazioni/<str:code>/<slug:slug>/"
 msgstr "leistungen/<str:code>/<slug:slug>/"
+
+msgid "strutture/"
+msgstr "einrichtungen/"
+
+msgid "strutture/<slug:nome>/"
+msgstr "einrichtungen/<slug:nome>/"
 
 #, python-format
 msgid "%(nome)s: tempi di attesa in Alto Adige"
@@ -78,6 +84,9 @@ msgstr "Entwicklung im Zeitverlauf"
 
 msgid "Tutte le prestazioni"
 msgstr "Alle Leistungen"
+
+msgid "Tutte le strutture"
+msgstr "Alle Einrichtungen"
 
 msgid "Progetto amatoriale senza garanzie: per prenotare contatta il CUP."
 msgstr "Privates Hobbyprojekt ohne Gewähr: Für Vormerkungen wenden Sie sich bitte an die Einheitliche Landesvormerkungsstelle (ELVS)."
@@ -163,6 +172,16 @@ msgstr "Wählen Sie eine Leistung, um das Diagramm anzuzeigen."
 msgid "Pagina di questa prestazione (link da condividere)"
 msgstr "Seite dieser Leistung (Link zum Teilen)"
 
+msgid "La data è solo una stima, non un appuntamento: oggi + i giorni di attesa indicati nei dati raccolti."
+msgstr "Das Datum ist nur eine Schätzung, kein Termin: heute plus die in den erhobenen Daten angegebenen Wartetage."
+
+#, python-format
+msgid "Dati rilevati il %(rilevazione)s e pubblicati il %(pubblicazione)s: da allora la situazione può essere cambiata."
+msgstr "Daten erhoben am %(rilevazione)s und veröffentlicht am %(pubblicazione)s: Seither kann sich die Lage geändert haben."
+
+msgid "Per la data effettiva contatta il CUP."
+msgstr "Den tatsächlichen Termin erfahren Sie bei der Einheitlichen Landesvormerkungsstelle (ELVS)."
+
 msgid "Date disponibili più vicine"
 msgstr "Nächste verfügbare Termine"
 
@@ -193,16 +212,6 @@ msgstr "Tg."
 
 msgid "N/D"
 msgstr "k. A."
-
-msgid "La data è solo una stima, non un appuntamento: oggi + i giorni di attesa indicati nei dati raccolti."
-msgstr "Das Datum ist nur eine Schätzung, kein Termin: heute plus die in den erhobenen Daten angegebenen Wartetage."
-
-#, python-format
-msgid "Dati rilevati il %(rilevazione)s e pubblicati il %(pubblicazione)s: da allora la situazione può essere cambiata."
-msgstr "Daten erhoben am %(rilevazione)s und veröffentlicht am %(pubblicazione)s: Seither kann sich die Lage geändert haben."
-
-msgid "Per la data effettiva contatta il CUP."
-msgstr "Den tatsächlichen Termin erfahren Sie bei der Einheitlichen Landesvormerkungsstelle (ELVS)."
 
 msgid "Nessun dato trovato per i filtri selezionati."
 msgstr "Keine Daten für die gewählten Filter gefunden."
@@ -269,6 +278,72 @@ msgstr "Veröffentlichungsdatum der Open Data"
 
 msgid "Media globale giorni di attesa"
 msgstr "Durchschnittliche Wartezeit insgesamt"
+
+#, python-format
+msgid "%(nome)s: tempi di attesa per visite ed esami"
+msgstr "%(nome)s: Wartezeiten für Visiten und Untersuchungen"
+
+#, python-format
+msgid "%(nome)s (%(citta)s): tempi di attesa per %(n)s prestazione, da %(minimo)s a %(massimo)s giorni, confrontati con il minimo in Alto Adige. Dati opendata del %(data)s."
+msgid_plural "%(nome)s (%(citta)s): tempi di attesa per %(n)s prestazioni, da %(minimo)s a %(massimo)s giorni, confrontati con il minimo in Alto Adige. Dati opendata del %(data)s."
+msgstr[0] "%(nome)s (%(citta)s): Wartezeiten für %(n)s Leistung, von %(minimo)s bis %(massimo)s Tagen, im Vergleich zur kürzesten Wartezeit in Südtirol. Open Data vom %(data)s."
+msgstr[1] "%(nome)s (%(citta)s): Wartezeiten für %(n)s Leistungen, von %(minimo)s bis %(massimo)s Tagen, im Vergleich zur kürzesten Wartezeit in Südtirol. Open Data vom %(data)s."
+
+#, python-format
+msgid "%(nome)s (%(citta)s): prestazioni e contatti. Nessun tempo di attesa indicato nei dati opendata del %(data)s."
+msgstr "%(nome)s (%(citta)s): Leistungen und Kontakte. Keine Wartezeiten in den Open Data vom %(data)s angegeben."
+
+#, python-format
+msgid "%(citta)s: tempi di attesa per %(n)s prestazione."
+msgid_plural "%(citta)s: tempi di attesa per %(n)s prestazioni."
+msgstr[0] "%(citta)s: Wartezeiten für %(n)s Leistung."
+msgstr[1] "%(citta)s: Wartezeiten für %(n)s Leistungen."
+
+msgid "Strutture"
+msgstr "Einrichtungen"
+
+#, python-format
+msgid "%(nome)s: tempi di attesa"
+msgstr "%(nome)s: Wartezeiten"
+
+#, python-format
+msgid "<strong>%(nome)s</strong> (%(citta)s) compare nei dati opendata con %(n)s prestazione."
+msgid_plural "<strong>%(nome)s</strong> (%(citta)s) compare nei dati opendata con %(n)s prestazioni."
+msgstr[0] "<strong>%(nome)s</strong> (%(citta)s) ist in den Open Data mit %(n)s Leistung vertreten."
+msgstr[1] "<strong>%(nome)s</strong> (%(citta)s) ist in den Open Data mit %(n)s Leistungen vertreten."
+
+#, python-format
+msgid "L'attesa più breve è per <strong>%(nome)s</strong> (%(giorni)s giorno),"
+msgid_plural "L'attesa più breve è per <strong>%(nome)s</strong> (%(giorni)s giorni),"
+msgstr[0] "Die kürzeste Wartezeit gilt für <strong>%(nome)s</strong> (%(giorni)s Tag),"
+msgstr[1] "Die kürzeste Wartezeit gilt für <strong>%(nome)s</strong> (%(giorni)s Tage),"
+
+#, python-format
+msgid "la più lunga per <strong>%(nome)s</strong> (%(giorni)s giorno)."
+msgid_plural "la più lunga per <strong>%(nome)s</strong> (%(giorni)s giorni)."
+msgstr[0] "die längste für <strong>%(nome)s</strong> (%(giorni)s Tag)."
+msgstr[1] "die längste für <strong>%(nome)s</strong> (%(giorni)s Tage)."
+
+msgid "Reparto"
+msgstr "Abteilung"
+
+msgid "Minimo in Alto Adige"
+msgstr "Kürzeste in Südtirol"
+
+msgid "Ospedali e strutture sanitarie – Tempi di attesa in Alto Adige"
+msgstr "Krankenhäuser und Gesundheitseinrichtungen – Wartezeiten in Südtirol"
+
+msgid "Tempi di attesa per visite ed esami in ogni ospedale, clinica e sede di distretto dell'Alto Adige, città per città, dai dati opendata della Provincia di Bolzano."
+msgstr "Wartezeiten für Visiten und Untersuchungen in allen Krankenhäusern, Kliniken und Sprengelsitzen Südtirols, Ort für Ort, aus den Open Data des Landes Südtirol."
+
+msgid "Ospedali e strutture sanitarie"
+msgstr "Krankenhäuser und Gesundheitseinrichtungen"
+
+msgid "Apri una struttura per vedere i tempi di attesa di tutte le sue prestazioni."
+msgstr "Wählen Sie eine Einrichtung, um die Wartezeiten aller ihrer Leistungen zu sehen."
+
+msgid "Tra parentesi: numero di prestazioni rilevate."
+msgstr "In Klammern: Anzahl der erhobenen Leistungen."
 
 msgid "Tempi di attesa per visite ed esami specialistici negli ospedali e nelle strutture sanitarie dell'Alto Adige, con le date disponibili più vicine. Dati opendata della Provincia di Bolzano, pubblicati circa una volta al mese."
 msgstr "Wartezeiten für Facharztvisiten und Untersuchungen in den Krankenhäusern und Gesundheitseinrichtungen Südtirols, mit den nächsten verfügbaren Terminen. Open Data des Landes Südtirol, etwa einmal im Monat veröffentlicht."
