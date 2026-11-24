@@ -1,9 +1,13 @@
+import re
 from datetime import timedelta
 
 from django.db import models
 from django.utils import timezone
 
 from .lingue import Bilingue, slug
+
+# CUP provinciale: nell'opendata compare quasi sempre senza prefisso ("100 100")
+TELEFONO_CUP = "0471 100 100"
 
 
 class DataFetchLog(models.Model):
@@ -56,6 +60,16 @@ class Structure(Bilingue, models.Model):
     @property
     def description(self):
         return self.testo("description")
+
+    @property
+    def phone_number(self):
+        """Telefono da mostrare: il CUP è completato col prefisso, gli altri restano come nei dati."""
+        return TELEFONO_CUP if re.sub(r"\D", "", self.phone) == "100100" else self.phone
+
+    @property
+    def phone_link(self):
+        """Solo cifre del primo numero, per `tel:` (nei dati ci sono "0473/735020" e "0474 581136 - 581137")."""
+        return re.sub(r"\D", "", self.phone_number.split(" - ")[0])
 
     @property
     def address_name(self):

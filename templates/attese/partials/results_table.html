@@ -55,8 +55,8 @@
               </td>
               <td class="small">
                 {% if r.structure.phone %}
-                  <a href="tel:{{ r.structure.phone|cut:' ' }}" class="text-decoration-none">
-                    <i class="bi bi-telephone me-1"></i>{{ r.structure.phone }}
+                  <a href="tel:{{ r.structure.phone_link }}" class="text-decoration-none">
+                    <i class="bi bi-telephone me-1"></i>{{ r.structure.phone_number }}
                   </a>
                 {% endif %}
                 {% if r.info %}

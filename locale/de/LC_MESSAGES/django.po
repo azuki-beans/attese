@@ -270,8 +270,8 @@ msgstr "Veröffentlichungsdatum der Open Data"
 msgid "Media globale giorni di attesa"
 msgstr "Durchschnittliche Wartezeit insgesamt"
 
-msgid "Tempi di attesa per visite ed esami specialistici negli ospedali e nelle strutture sanitarie dell'Alto Adige, con le date disponibili più vicine. Dati opendata della Provincia di Bolzano aggiornati ogni giorno."
-msgstr "Wartezeiten für Facharztvisiten und Untersuchungen in den Krankenhäusern und Gesundheitseinrichtungen Südtirols, mit den nächsten verfügbaren Terminen. Open Data des Landes Südtirol, täglich aktualisiert."
+msgid "Tempi di attesa per visite ed esami specialistici negli ospedali e nelle strutture sanitarie dell'Alto Adige, con le date disponibili più vicine. Dati opendata della Provincia di Bolzano, pubblicati circa una volta al mese."
+msgstr "Wartezeiten für Facharztvisiten und Untersuchungen in den Krankenhäusern und Gesundheitseinrichtungen Südtirols, mit den nächsten verfügbaren Terminen. Open Data des Landes Südtirol, etwa einmal im Monat veröffentlicht."
 
 msgid "Visite ed esami specialistici in Alto Adige: tempi di attesa e date disponibili più vicine per struttura, da dati opendata."
 msgstr "Facharztvisiten und Untersuchungen in Südtirol: Wartezeiten und nächste verfügbare Termine nach Einrichtung, aus Open Data."
