@@ -1,13 +1,13 @@
-{% regroup current_activities by activity_description_it.0 as letters %}
+{% regroup current_activities by lettera as letters %}
 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
   {% for letter in letters %}
     <div class="col">
-      <div class="fw-bold text-success border-bottom mb-1">{{ letter.grouper|upper }}</div>
+      <div class="fw-bold text-success border-bottom mb-1">{{ letter.grouper }}</div>
       <ul class="list-unstyled small mb-0">
         {% for a in letter.list %}
           <li class="py-1">
-            <a href="{% url 'activity_detail' a.activity_code a.activity_description_it|slugify %}" class="text-decoration-none">
-              {{ a.activity_description_it }}
+            <a href="{% url 'activity_detail' a.activity_code a.slug %}" class="text-decoration-none">
+              {{ a.nome }}
             </a>
           </li>
         {% endfor %}

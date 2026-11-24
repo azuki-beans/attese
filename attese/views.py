@@ -5,10 +5,11 @@ from django.db.models import Avg, Max
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.utils.text import slugify
+from django.utils.translation import override
 from django.views import View
 
-from .models import DataFetchLog, WaitingRecord
+from .lingue import codici_lingua, localizzato, slug
+from .models import DataFetchLog, Structure, WaitingRecord
 
 
 def latest_records(activity_code):
@@ -21,16 +22,32 @@ def latest_records(activity_code):
     return qs.filter(publish_date=latest).select_related("structure").order_by("waiting_days")
 
 
+def _elenco(qs):
+    """
+    Prestazioni distinte (codice, nome nella lingua attiva, slug, lettera), in ordine alfabetico.
+    Si ordina in Python sullo slug: per il database "Ösophago…" verrebbe dopo la Z.
+    """
+    righe = qs.order_by().values("activity_code", nome=localizzato("activity_description")).distinct()
+    elenco = [{**r, "nome": r["nome"].strip(), "slug": slug(r["nome"])} for r in righe]
+    for r in elenco:
+        r["lettera"] = r["slug"][:1].upper()
+    return sorted(elenco, key=lambda r: r["slug"])
+
+
+def all_activities():
+    """Tutte le prestazioni mai pubblicate (menu di ricerca e statistiche)."""
+    return _elenco(WaitingRecord.objects.all())
+
+
 def current_activities():
-    """Prestazioni presenti nell'ultima pubblicazione opendata, in ordine alfabetico."""
+    """Prestazioni presenti nell'ultima pubblicazione opendata."""
     latest = WaitingRecord.objects.aggregate(Max("publish_date"))["publish_date__max"]
-    return (
-        WaitingRecord.objects
-        .filter(publish_date=latest)
-        .values("activity_code", "activity_description_it")
-        .distinct()
-        .order_by("activity_description_it")
-    )
+    return _elenco(WaitingRecord.objects.filter(publish_date=latest))
+
+
+def _nome_prestazione(code):
+    record = WaitingRecord.objects.filter(activity_code=code).order_by("-publish_date").first()
+    return record.activity_description if record else code
 
 
 class DashboardView(View):
@@ -41,12 +58,7 @@ class DashboardView(View):
     """
 
     def get(self, request):
-        activities = (
-            WaitingRecord.objects
-            .values("activity_code", "activity_description_it")
-            .distinct()
-            .order_by("activity_description_it")
-        )
+        activities = all_activities()
         has_data = WaitingRecord.objects.exists()
         last_fetch = DataFetchLog.objects.first()
         return render(request, "attese/dashboard.html", {
@@ -78,15 +90,21 @@ class ActivityDetailView(View):
             raise Http404("Prestazione non trovata")
 
         activity = records[0]
-        canonical_slug = slugify(activity.activity_description_it)
-        if slug != canonical_slug:
-            return redirect("activity_detail", code=code, slug=canonical_slug, permanent=True)
+        if slug != activity.activity_slug:
+            return redirect("activity_detail", code=code, slug=activity.activity_slug, permanent=True)
+
+        # la stessa prestazione nelle altre lingue: cambia anche lo slug, non solo il prefisso
+        alternative = {}
+        for lingua in codici_lingua():
+            with override(lingua):
+                alternative[lingua] = reverse("activity_detail", args=[code, activity.activity_slug])
 
         best = next((r for r in records if r.waiting_days is not None), None)
         return render(request, "attese/activity_detail.html", {
             "activity": activity,
             "records": records,
             "best": best,
+            "lingue_alternative": alternative,
         })
 
 
@@ -96,6 +114,7 @@ def robots_txt(request):
         "Disallow: /django-admin/",
         "Disallow: /accounts/",
         "Disallow: /partials/",
+        "Disallow: /de/partials/",
         "Disallow: /i18n/",
         "",
         f"Sitemap: {settings.SITE_URL.rstrip('/')}{reverse('sitemap')}",
@@ -105,8 +124,7 @@ def robots_txt(request):
 
 class FilterPartialView(View):
     """
-    HTMX endpoint: al cambio della prestazione aggiorna il select delle strutture
-    e mostra i risultati per quella prestazione (tutte le strutture).
+    HTMX endpoint: al cambio della prestazione mostra i risultati (tutte le strutture).
     """
 
     def get(self, request):
@@ -114,44 +132,12 @@ class FilterPartialView(View):
 
         if not activity_code:
             return render(request, "attese/partials/empty.html")
-
-        structures = (
-            WaitingRecord.objects
-            .filter(activity_code=activity_code)
-            .values("structure__description_it")
-            .distinct()
-            .order_by("structure__description_it")
-        )
 
         records = latest_records(activity_code)
 
         return render(request, "attese/partials/filter_area.html", {
             "activity_code": activity_code,
-            "structures": structures,
             "records": records,
-        })
-
-
-class ResultsPartialView(View):
-    """
-    HTMX endpoint: al cambio della struttura aggiorna solo la tabella dei risultati.
-    """
-
-    def get(self, request):
-        activity_code = request.GET.get("activity_code", "").strip()
-        structure = request.GET.get("structure", "").strip()
-
-        if not activity_code:
-            return render(request, "attese/partials/empty.html")
-
-        records = latest_records(activity_code)
-        if structure:
-            records = records.filter(structure=structure)
-
-        return render(request, "attese/partials/results_table.html", {
-            "records": records,
-            "activity_code": activity_code,
-            "structure": structure,
         })
 
 
@@ -165,12 +151,7 @@ def _qs_to_chart_data(qs):
 
 class StatisticsView(View):
     def get(self, request):
-        activities = (
-            WaitingRecord.objects
-            .values("activity_code", "activity_description_it")
-            .distinct()
-            .order_by("activity_description_it")
-        )
+        activities = all_activities()
 
         global_qs = (
             WaitingRecord.objects
@@ -205,12 +186,7 @@ class ActivityChartPartialView(View):
         )
         labels, data = _qs_to_chart_data(qs)
 
-        activity_label = (
-            WaitingRecord.objects
-            .filter(activity_code=activity_code)
-            .values_list("activity_description_it", flat=True)
-            .first() or activity_code
-        )
+        activity_label = _nome_prestazione(activity_code)
 
         return render(request, "attese/partials/activity_chart.html", {
             "activity_label": activity_label,
@@ -228,11 +204,10 @@ class StructurePickerPartialView(View):
             return render(request, "attese/partials/chart_empty.html")
 
         structures = (
-            WaitingRecord.objects
-            .filter(activity_code=activity_code)
-            .values("structure__id", "structure__description_it")
+            Structure.objects
+            .filter(waiting_records__activity_code=activity_code)
+            .order_by(localizzato("description"))
             .distinct()
-            .order_by("structure__description_it")
         )
         return render(request, "attese/partials/structure_picker.html", {
             "activity_code": activity_code,
@@ -259,18 +234,9 @@ class StructureChartPartialView(View):
         )
         labels, data = _qs_to_chart_data(qs)
 
-        structure_label = (
-            WaitingRecord.objects
-            .filter(structure_id=structure_id)
-            .values_list("structure__description_it", flat=True)
-            .first() or ""
-        )
-        activity_label = (
-            WaitingRecord.objects
-            .filter(activity_code=activity_code)
-            .values_list("activity_description_it", flat=True)
-            .first() or activity_code
-        )
+        structure = Structure.objects.filter(pk=structure_id).first()
+        structure_label = structure.description if structure else ""
+        activity_label = _nome_prestazione(activity_code)
 
         return render(request, "attese/partials/structure_chart.html", {
             "labels": json.dumps(labels),

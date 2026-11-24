@@ -1,11 +1,11 @@
-{% if records %}
+{% load i18n %}{% if records %}
 <div class="card">
   <div class="card-header bg-white d-flex justify-content-between align-items-center">
     <span class="fw-semibold">
       <i class="bi bi-list-ol me-1 text-success"></i>
-      Date disponibili più vicine
+      {% translate "Date disponibili più vicine" %}
     </span>
-    <span class="badge bg-secondary">{{ records|length }} risultat{{ records|length|pluralize:"o,i" }}</span>
+    <span class="badge bg-secondary">{% blocktranslate trimmed count n=records|length %}{{ n }} risultato{% plural %}{{ n }} risultati{% endblocktranslate %}</span>
   </div>
   <div class="card-body p-0">
     <div class="table-responsive">
@@ -13,11 +13,11 @@
         <thead class="table-light">
           <tr>
             <th class="ps-3">#</th>
-            <th>Struttura</th>
-            <th>Reparto / Indirizzo</th>
-            <th class="text-center">Giorni di attesa</th>
-            <th class="text-center">Data <b>STIMATA</b> disponibilità</th>
-            <th>Contatto</th>
+            <th>{% translate "Struttura" %}</th>
+            <th>{% translate "Reparto / Indirizzo" %}</th>
+            <th class="text-center">{% translate "Giorni di attesa" %}</th>
+            <th class="text-center">{% blocktranslate %}Data <b>STIMATA</b> disponibilità{% endblocktranslate %}</th>
+            <th>{% translate "Contatto" %}</th>
           </tr>
         </thead>
         <tbody>
@@ -25,32 +25,33 @@
             <tr class="{% if r.waiting_days is not None %}{% if r.waiting_days <= 15 %}table-days-low{% elif r.waiting_days <= 30 %}table-days-medium{% else %}table-days-high{% endif %}{% endif %}">
               <td class="ps-3 text-muted small">{{ forloop.counter }}</td>
               <td>
-                <strong>{{ r.structure.description_it }}</strong>
-                {% if r.structure.city_it %}
+                <strong>{{ r.structure.description }}</strong>
+                {% if r.structure.city %}
                   <br><span class="text-muted small">
-                    <i class="bi bi-geo-alt me-1"></i>{{ r.structure.city_it }}
+                    <i class="bi bi-geo-alt me-1"></i>{{ r.structure.city }}
                   </span>
                 {% endif %}
               </td>
               <td class="small text-muted">
-                {% if r.structure.address_name_it %}{{ r.structure.address_name_it }}<br>{% endif %}
-                {% if r.structure.street_it %}{{ r.structure.street_it }}{% if r.structure.zip %}, {{ r.structure.zip }}{% endif %}{% endif %}
+                {% if r.structure.address_name %}{{ r.structure.address_name }}<br>{% endif %}
+                {% if r.structure.street %}{{ r.structure.street }}{% if r.structure.zip %}, {{ r.structure.zip }}{% endif %}{% endif %}
               </td>
               <td class="text-center">
                 {% if r.waiting_days is not None %}
                   <span class="fw-bold fs-5">{{ r.waiting_days }}</span>
-                  <span class="text-muted small"> gg</span>
+                  <span class="text-muted small"> {% translate "gg" context "giorni" %}</span>
                 {% else %}
                   <span class="text-muted">—</span>
                 {% endif %}
               </td>
               <td class="text-center">
                 {% if r.estimated_date %}
-                  <span class="badge bg-success fs-6 fw-normal">
-                    {{ r.estimated_date|date:"d/m/Y" }}
+                  <span class="badge {% if r.estimated_date_passed %}bg-secondary{% else %}bg-success{% endif %} fs-6 fw-normal">
+                    {{ r.estimated_date|date:"SHORT_DATE_FORMAT" }}
                   </span>
+                  {% if r.estimated_date_passed %}<br><span class="text-muted small">{% translate "data già passata" %}</span>{% endif %}
                 {% else %}
-                  <span class="text-muted small">N/D</span>
+                  <span class="text-muted small">{% translate "N/D" %}</span>
                 {% endif %}
               </td>
               <td class="small">
@@ -59,9 +60,9 @@
                     <i class="bi bi-telephone me-1"></i>{{ r.structure.phone }}
                   </a>
                 {% endif %}
-                {% if r.info_it %}
+                {% if r.info %}
                   <br>
-                  <span class="text-muted fst-italic">{{ r.info_it|truncatechars:80 }}</span>
+                  <span class="text-muted fst-italic">{{ r.info|truncatechars:80 }}</span>
                 {% endif %}
               </td>
             </tr>
@@ -72,11 +73,10 @@
   </div>
   <div class="card-footer text-muted small">
     <i class="bi bi-info-circle me-1"></i>
-    La data stimata è calcolata come: data pubblicazione dati + giorni di attesa.
-    Aggiornamento dati: quotidiano.
+    {% translate "La data stimata è calcolata come: data pubblicazione dati + giorni di attesa. Aggiornamento dati: quotidiano." %}
     <span class="float-end">
-      Fonte: <a href="https://data.civis.bz.it/it/dataset/southtyrolean-healthservices-waitingtimes"
-               target="_blank" class="text-muted">Open Data Alto Adige – CC Zero</a>
+      {% translate "Fonte" %}: <a href="https://data.civis.bz.it/{{ LANGUAGE_CODE }}/dataset/southtyrolean-healthservices-waitingtimes"
+               target="_blank" class="text-muted">{% translate "Open Data Alto Adige" %} – CC Zero</a>
     </span>
   </div>
 </div>
@@ -84,6 +84,6 @@
 {% else %}
 <div class="alert alert-info">
   <i class="bi bi-search me-2"></i>
-  Nessun dato trovato per i filtri selezionati.
+  {% translate "Nessun dato trovato per i filtri selezionati." %}
 </div>
 {% endif %}

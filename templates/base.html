@@ -1,23 +1,25 @@
-{% load static socialaccount %}
+{% load static socialaccount i18n %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Tempi di attesa – Alto Adige / Südtirol{% endblock %}</title>
-  <meta name="description" content="{% block meta_description %}Tempi di attesa per visite ed esami specialistici negli ospedali e nelle strutture sanitarie dell'Alto Adige, con le date disponibili più vicine. Dati opendata della Provincia di Bolzano aggiornati ogni giorno.{% endblock %}">
+  <title>{% block title %}{% translate "Tempi di attesa sanitari – Alto Adige" %}{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{% translate "Tempi di attesa per visite ed esami specialistici negli ospedali e nelle strutture sanitarie dell'Alto Adige, con le date disponibili più vicine. Dati opendata della Provincia di Bolzano aggiornati ogni giorno." %}{% endblock %}">
   <link rel="canonical" href="{{ SITE_URL }}{% block canonical_path %}{{ request.path }}{% endblock %}">
+  {% for lingua, percorso in lingue_alternative.items %}<link rel="alternate" hreflang="{{ lingua }}" href="{{ SITE_URL }}{{ percorso }}">
+  {% endfor %}<link rel="alternate" hreflang="x-default" href="{{ SITE_URL }}{{ lingue_alternative.it }}">
   <meta property="og:type" content="website">
-  <meta property="og:locale" content="it_IT">
-  <meta property="og:site_name" content="Tempi di attesa sanitari – Alto Adige">
-  <meta property="og:title" content="{% block og_title %}Tempi di attesa sanitari – Alto Adige{% endblock %}">
-  <meta property="og:description" content="{% block og_description %}Visite ed esami specialistici in Alto Adige: tempi di attesa e date disponibili più vicine per struttura, da dati opendata.{% endblock %}">
+  <meta property="og:locale" content="{% if LANGUAGE_CODE == "de" %}de_DE{% else %}it_IT{% endif %}">
+  <meta property="og:site_name" content="{% translate "Tempi di attesa sanitari – Alto Adige" %}">
+  <meta property="og:title" content="{% block og_title %}{% translate "Tempi di attesa sanitari – Alto Adige" %}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}{% translate "Visite ed esami specialistici in Alto Adige: tempi di attesa e date disponibili più vicine per struttura, da dati opendata." %}{% endblock %}">
   <meta property="og:url" content="{{ SITE_URL }}{{ request.path }}">
   {# anteprima dei link condivisi (1200×630); URL assoluto: i social non risolvono quelli relativi #}
-  <meta property="og:image" content="{{ SITE_URL }}{% static 'images/og-image.png' %}">
+  <meta property="og:image" content="{{ SITE_URL }}{% if LANGUAGE_CODE == "de" %}{% static 'images/og-image-de.png' %}{% else %}{% static 'images/og-image.png' %}{% endif %}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Tempi di attesa sanitari in Alto Adige: visite ed esami specialistici">
+  <meta property="og:image:alt" content="{% translate "Tempi di attesa sanitari in Alto Adige: visite ed esami specialistici" %}">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
   <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32.png' %}">
@@ -71,18 +73,25 @@
 <body>
   <nav class="navbar mb-4">
     <div class="container-fluid container-xl">
-      <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'dashboard' %}">
         <i class="bi bi-heart-pulse-fill text-white fs-4"></i>
-        <span>Tempi di attesa sanitari – Alto Adige</span>
+        <span>{% translate "Tempi di attesa sanitari – Alto Adige" %}</span>
       </a>
-      <div class="d-flex gap-2 align-items-center">
+      <div class="d-flex flex-wrap gap-2 align-items-center">
         {% include "partials/condividi.html" with classe="btn btn-outline-light" %}
         <a href="{% url 'activity_index' %}" class="btn btn-outline-light">
-          <i class="bi bi-list-ul me-1"></i>Prestazioni
+          <i class="bi bi-list-ul me-1"></i>{% translate "Prestazioni" %}
         </a>
         <a href="{% url 'statistics' %}" class="btn btn-light fw-semibold text-success-emphasis shadow-sm">
-          <i class="bi bi-bar-chart-line-fill me-1"></i>Statistiche
+          <i class="bi bi-bar-chart-line-fill me-1"></i>{% translate "Statistiche" %}
         </a>
+        <div class="btn-group" role="group" aria-label="{% translate "Lingua" %}">
+          {% for lingua, percorso in lingue_alternative.items %}
+            <a href="{{ percorso }}" hreflang="{{ lingua }}" lang="{{ lingua }}"
+               class="btn btn-outline-light{% if lingua == LANGUAGE_CODE %} active{% endif %}"
+               {% if lingua == LANGUAGE_CODE %}aria-current="true"{% endif %}>{{ lingua|upper }}</a>
+          {% endfor %}
+        </div>
       </div>
     </div>
   </nav>
@@ -99,19 +108,19 @@
 
   <footer class="text-center text-muted small py-4 mt-5">
     <div class="mb-1">
-      Dati: <a href="https://data.civis.bz.it/it/dataset/southtyrolean-healthservices-waitingtimes" target="_blank" class="text-muted">Open Data Alto Adige</a>
-      &bull; Licenza CC Zero
-      &bull; <a href="https://github.com/azuki-beans/attese" target="_blank" class="text-muted"><i class="bi bi-github me-1"></i>Codice sorgente</a>
+      {% translate "Dati" %}: <a href="https://data.civis.bz.it/{{ LANGUAGE_CODE }}/dataset/southtyrolean-healthservices-waitingtimes" target="_blank" class="text-muted">{% translate "Open Data Alto Adige" %}</a>
+      &bull; {% translate "Licenza CC Zero" %}
+      &bull; <a href="https://github.com/azuki-beans/attese" target="_blank" class="text-muted"><i class="bi bi-github me-1"></i>{% translate "Codice sorgente" %}</a>
     </div>
     <div>
-      Progetto amatoriale senza garanzie. Per informazioni certe contatta
-      <a href="https://www.sabes.it" target="_blank" class="text-muted">Azienda Sanitaria dell'Alto Adige</a> &bull; CUP: 0471 100 200
+      {% translate "Progetto amatoriale senza garanzie. Per informazioni certe contatta" %}
+      <a href="https://www.sabes.it{% if LANGUAGE_CODE == "de" %}/de{% endif %}" target="_blank" class="text-muted">{% translate "Azienda Sanitaria dell'Alto Adige" %}</a> &bull; {% translate "CUP" %}: 0471 100 200
     </div>
     <div class="mt-1">
-      Un progetto <a href="https://azukibeans.dev/it/" class="text-muted">azuki-beans</a>.
-      Altri progetti:
-      <a href="https://coperni.azukibeans.dev/it/places/" class="text-muted">Coperni</a> (qualità dell'aria)
-      &bull; <a href="https://p7m.azukibeans.dev/" class="text-muted">p7m-apri</a> (aprire file .p7m e fatture elettroniche)
+      {% translate "Un progetto" %} <a href="https://azukibeans.dev/{% if LANGUAGE_CODE == "it" %}it/{% endif %}" class="text-muted">azuki-beans</a>.
+      {% translate "Altri progetti" %}:
+      <a href="https://coperni.azukibeans.dev/{% if LANGUAGE_CODE == "it" %}it/{% endif %}places/" class="text-muted">Coperni</a> ({% translate "qualità dell'aria" %})
+      &bull; <a href="https://p7m.azukibeans.dev/" class="text-muted">p7m-apri</a> ({% translate "aprire file .p7m e fatture elettroniche" %})
     </div>
   </footer>
 

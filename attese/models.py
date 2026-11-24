@@ -1,4 +1,9 @@
+from datetime import timedelta
+
 from django.db import models
+from django.utils import timezone
+
+from .lingue import Bilingue, slug
 
 
 class DataFetchLog(models.Model):
@@ -21,7 +26,7 @@ class DataFetchLog(models.Model):
         return f"Fetch {self.fetched_at:%Y-%m-%d %H:%M} – {self.new_records_count} nuovi record"
 
 
-class Structure(models.Model):
+class Structure(Bilingue, models.Model):
     """
     Una struttura sanitaria dell'Alto Adige.
     Viene aggiornata tramite il management command fetch_waitingtimes.
@@ -30,7 +35,8 @@ class Structure(models.Model):
     description_de = models.CharField(max_length=300, verbose_name="Struktur (DE)", blank=True)
     address_name_it = models.CharField(max_length=300, blank=True, verbose_name="Reparto (IT)")
     address_name_de = models.CharField(max_length=300, blank=True, verbose_name="Abteilung (DE)")
-    street_it = models.CharField(max_length=200, blank=True, verbose_name="Via")
+    street_it = models.CharField(max_length=200, blank=True, verbose_name="Via (IT)")
+    street_de = models.CharField(max_length=200, blank=True, verbose_name="Straße (DE)")
     zip = models.CharField(max_length=10, blank=True, verbose_name="CAP")
     city_it = models.CharField(max_length=100, blank=True, verbose_name="Città (IT)")
     city_de = models.CharField(max_length=100, blank=True, verbose_name="Stadt (DE)")
@@ -47,8 +53,24 @@ class Structure(models.Model):
     def __str__(self):
         return self.description_it
 
+    @property
+    def description(self):
+        return self.testo("description")
 
-class WaitingRecord(models.Model):
+    @property
+    def address_name(self):
+        return self.testo("address_name")
+
+    @property
+    def street(self):
+        return self.testo("street")
+
+    @property
+    def city(self):
+        return self.testo("city")
+
+
+class WaitingRecord(Bilingue, models.Model):
     """
     Un record dal dataset opendata dei tempi di attesa sanitari dell'Alto Adige.
     Viene aggiornato tramite il management command fetch_waitingtimes.
@@ -76,8 +98,24 @@ class WaitingRecord(models.Model):
 
     @property
     def estimated_date(self):
-        """Data stimata di disponibilità = oggi + giorni di attesa."""
-        if self.waiting_days is not None:
-            from datetime import date, timedelta
-            return date.today() + timedelta(days=self.waiting_days)
-        return None
+        """Data stimata di disponibilità = data di pubblicazione dei dati + giorni di attesa."""
+        if self.waiting_days is None or self.publish_date is None:
+            return None
+        return self.publish_date + timedelta(days=self.waiting_days)
+
+    @property
+    def estimated_date_passed(self):
+        """I dati escono circa una volta al mese: con attese brevi la data stimata può essere già passata."""
+        return self.estimated_date is not None and self.estimated_date < timezone.localdate()
+
+    @property
+    def activity_description(self):
+        return self.testo("activity_description")
+
+    @property
+    def activity_slug(self):
+        return slug(self.activity_description)
+
+    @property
+    def info(self):
+        return self.testo("info")

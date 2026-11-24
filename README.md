@@ -16,6 +16,11 @@ https://attese.azukibeans.dev/
 - Mostra, per ogni prestazione, le strutture con le date disponibili più vicine
 - Tiene traccia nel tempo dell'andamento dei tempi medi di attesa, globale e per prestazione
 
+## Lingue
+
+Italiano (`/`) e tedesco (`/de/`). In locale le traduzioni vanno compilate:
+`python manage.py compilemessages -l de`.
+
 ## Dati
 
 I dati provengono dall'[Open Data Hub dell'Alto Adige](https://data.civis.bz.it/it/dataset/southtyrolean-healthservices-waitingtimes),

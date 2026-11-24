@@ -1,10 +1,27 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}{{ activity.activity_description_it }}: tempi di attesa in Alto Adige{% endblock %}
-{% block meta_description %}{{ activity.activity_description_it }} in Alto Adige: {% if best %}attesa minima {{ best.waiting_days }} giorn{{ best.waiting_days|pluralize:"o,i" }} ({{ best.structure.description_it }}{% if best.structure.city_it %}, {{ best.structure.city_it }}{% endif %}). {% endif %}Confronta i tempi di attesa in {{ records|length }} struttur{{ records|length|pluralize:"a,e" }} sanitari{{ records|length|pluralize:"a,e" }}, dati opendata{% if activity.publish_date %} del {{ activity.publish_date|date:"d/m/Y" }}{% endif %}.{% endblock %}
-{% block canonical_path %}{% url 'activity_detail' activity.activity_code activity.activity_description_it|slugify %}{% endblock %}
-{% block og_title %}{{ activity.activity_description_it }}: tempi di attesa in Alto Adige{% endblock %}
-{% block og_description %}{% if best %}Attesa minima {{ best.waiting_days }} giorn{{ best.waiting_days|pluralize:"o,i" }} – {% endif %}confronto tra {{ records|length }} struttur{{ records|length|pluralize:"a,e" }} in Alto Adige.{% endblock %}
+{% block title %}{% blocktranslate with nome=activity.activity_description %}{{ nome }}: tempi di attesa in Alto Adige{% endblocktranslate %}{% endblock %}
+{% block meta_description %}{% if best %}{% blocktranslate trimmed count giorni=best.waiting_days with nome=activity.activity_description struttura=best.structure.description citta=best.structure.city %}
+{{ nome }} in Alto Adige: attesa minima {{ giorni }} giorno ({{ struttura }}, {{ citta }}).
+{% plural %}
+{{ nome }} in Alto Adige: attesa minima {{ giorni }} giorni ({{ struttura }}, {{ citta }}).
+{% endblocktranslate %}{% else %}{% blocktranslate with nome=activity.activity_description %}{{ nome }} in Alto Adige.{% endblocktranslate %}{% endif %} {% blocktranslate trimmed count n=records|length with data=activity.publish_date|date:"SHORT_DATE_FORMAT" %}
+Confronta i tempi di attesa in {{ n }} struttura sanitaria, dati opendata del {{ data }}.
+{% plural %}
+Confronta i tempi di attesa in {{ n }} strutture sanitarie, dati opendata del {{ data }}.
+{% endblocktranslate %}{% endblock %}
+{% block canonical_path %}{% url 'activity_detail' activity.activity_code activity.activity_slug %}{% endblock %}
+{% block og_title %}{% blocktranslate with nome=activity.activity_description %}{{ nome }}: tempi di attesa in Alto Adige{% endblocktranslate %}{% endblock %}
+{% block og_description %}{% if best %}{% blocktranslate trimmed count giorni=best.waiting_days %}
+Attesa minima {{ giorni }} giorno
+{% plural %}
+Attesa minima {{ giorni }} giorni
+{% endblocktranslate %} – {% endif %}{% blocktranslate trimmed count n=records|length %}
+confronto tra {{ n }} struttura in Alto Adige.
+{% plural %}
+confronto tra {{ n }} strutture in Alto Adige.
+{% endblocktranslate %}{% endblock %}
 
 {% block extra_head %}
 <script type="application/ld+json">
@@ -12,9 +29,9 @@
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   "itemListElement": [
-    {"@type": "ListItem", "position": 1, "name": "Home", "item": "{{ SITE_URL }}/"},
-    {"@type": "ListItem", "position": 2, "name": "Prestazioni", "item": "{{ SITE_URL }}{% url 'activity_index' %}"},
-    {"@type": "ListItem", "position": 3, "name": "{{ activity.activity_description_it|escapejs }}"}
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "{{ SITE_URL }}{% url 'dashboard' %}"},
+    {"@type": "ListItem", "position": 2, "name": "{% translate "Prestazioni" %}", "item": "{{ SITE_URL }}{% url 'activity_index' %}"},
+    {"@type": "ListItem", "position": 3, "name": "{{ activity.activity_description|escapejs }}"}
   ]
 }
 </script>
@@ -24,30 +41,41 @@
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb small">
     <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'activity_index' %}">Prestazioni</a></li>
-    <li class="breadcrumb-item active" aria-current="page">{{ activity.activity_description_it }}</li>
+    <li class="breadcrumb-item"><a href="{% url 'activity_index' %}">{% translate "Prestazioni" %}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ activity.activity_description }}</li>
   </ol>
 </nav>
 
 <div class="mb-4">
   <h1 class="h2 fw-bold mb-1">
-    <i class="bi bi-clipboard2-pulse me-2 text-success"></i>{{ activity.activity_description_it }}
+    <i class="bi bi-clipboard2-pulse me-2 text-success"></i>{{ activity.activity_description }}
   </h1>
-  {% if activity.activity_description_de %}
+  {% if LANGUAGE_CODE == "de" %}
+    <p class="text-muted mb-2" lang="it">{{ activity.activity_description_it }}</p>
+  {% elif activity.activity_description_de %}
     <p class="text-muted mb-2" lang="de">{{ activity.activity_description_de }}</p>
   {% endif %}
   <p class="mb-2">
-    Tempi di attesa per <strong>{{ activity.activity_description_it }}</strong> nelle strutture
-    sanitarie dell'Alto Adige{% if best %}: l'attesa più breve è di
-    <strong>{{ best.waiting_days }} giorn{{ best.waiting_days|pluralize:"o,i" }}</strong> presso
-    {{ best.structure.description_it }}{% if best.structure.city_it %} ({{ best.structure.city_it }}){% endif %}{% endif %}.
+    {% if best %}
+      {% blocktranslate trimmed count giorni=best.waiting_days with nome=activity.activity_description struttura=best.structure.description citta=best.structure.city %}
+        Tempi di attesa per <strong>{{ nome }}</strong> nelle strutture sanitarie dell'Alto Adige: l'attesa più
+        breve è di <strong>{{ giorni }} giorno</strong> presso {{ struttura }} ({{ citta }}).
+      {% plural %}
+        Tempi di attesa per <strong>{{ nome }}</strong> nelle strutture sanitarie dell'Alto Adige: l'attesa più
+        breve è di <strong>{{ giorni }} giorni</strong> presso {{ struttura }} ({{ citta }}).
+      {% endblocktranslate %}
+    {% else %}
+      {% blocktranslate trimmed with nome=activity.activity_description %}
+        Tempi di attesa per <strong>{{ nome }}</strong> nelle strutture sanitarie dell'Alto Adige.
+      {% endblocktranslate %}
+    {% endif %}
   </p>
   <div class="d-flex flex-wrap gap-3 small text-muted">
     {% if activity.survey_date %}
-      <span><i class="bi bi-clipboard2-check me-1 text-success"></i>Rilevazione: {{ activity.survey_date|date:"d/m/Y" }}</span>
+      <span><i class="bi bi-clipboard2-check me-1 text-success"></i>{% translate "Rilevazione" %}: {{ activity.survey_date|date:"SHORT_DATE_FORMAT" }}</span>
     {% endif %}
     {% if activity.publish_date %}
-      <span><i class="bi bi-cloud-arrow-up me-1 text-success"></i>Pubblicazione opendata: {{ activity.publish_date|date:"d/m/Y" }}</span>
+      <span><i class="bi bi-cloud-arrow-up me-1 text-success"></i>{% translate "Pubblicazione opendata" %}: {{ activity.publish_date|date:"SHORT_DATE_FORMAT" }}</span>
     {% endif %}
   </div>
 </div>
@@ -56,15 +84,16 @@
 
 <div class="d-flex flex-wrap gap-2 mt-4">
   <a href="{% url 'statistics' %}" class="btn btn-outline-success btn-sm">
-    <i class="bi bi-bar-chart-line me-1"></i>Andamento nel tempo
+    <i class="bi bi-bar-chart-line me-1"></i>{% translate "Andamento nel tempo" %}
   </a>
   <a href="{% url 'activity_index' %}" class="btn btn-outline-secondary btn-sm">
-    <i class="bi bi-list-ul me-1"></i>Tutte le prestazioni
+    <i class="bi bi-list-ul me-1"></i>{% translate "Tutte le prestazioni" %}
   </a>
 </div>
 
 <div class="alert alert-warning mt-4 small">
   <i class="bi bi-exclamation-triangle me-1"></i>
-  Progetto amatoriale senza garanzie: per prenotare contatta il CUP dell'<a href="https://www.sabes.it" target="_blank" class="alert-link">Azienda Sanitaria dell'Alto Adige</a> (0471 100 200).
+  {% translate "Progetto amatoriale senza garanzie: per prenotare contatta il CUP." %}
+  <a href="https://www.sabes.it{% if LANGUAGE_CODE == "de" %}/de{% endif %}" target="_blank" class="alert-link">{% translate "Azienda Sanitaria dell'Alto Adige" %}</a> (0471 100 200).
 </div>
 {% endblock %}

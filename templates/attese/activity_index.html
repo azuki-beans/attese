@@ -1,23 +1,23 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Elenco prestazioni – Tempi di attesa sanitari in Alto Adige{% endblock %}
-{% block meta_description %}Elenco completo di visite ed esami specialistici con i tempi di attesa nelle strutture sanitarie dell'Alto Adige, dai dati opendata della Provincia di Bolzano.{% endblock %}
-{% block og_title %}Elenco prestazioni – Tempi di attesa in Alto Adige{% endblock %}
+{% block title %}{% translate "Elenco prestazioni – Tempi di attesa sanitari in Alto Adige" %}{% endblock %}
+{% block meta_description %}{% translate "Elenco completo di visite ed esami specialistici con i tempi di attesa nelle strutture sanitarie dell'Alto Adige, dai dati opendata della Provincia di Bolzano." %}{% endblock %}
+{% block og_title %}{% translate "Elenco prestazioni – Tempi di attesa in Alto Adige" %}{% endblock %}
 
 {% block content %}
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb small">
     <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Prestazioni</li>
+    <li class="breadcrumb-item active" aria-current="page">{% translate "Prestazioni" %}</li>
   </ol>
 </nav>
 
 <h1 class="h2 fw-bold mb-1">
-  <i class="bi bi-list-ul me-2 text-success"></i>Prestazioni
+  <i class="bi bi-list-ul me-2 text-success"></i>{% translate "Prestazioni" %}
 </h1>
 <p class="text-muted">
-  Visite ed esami monitorati dall'opendata dell'Alto Adige. Apri una prestazione per vedere
-  i tempi di attesa in ogni struttura.
+  {% translate "Visite ed esami monitorati dall'opendata dell'Alto Adige. Apri una prestazione per vedere i tempi di attesa in ogni struttura." %}
 </p>
 
 <div class="card">
@@ -25,7 +25,7 @@
     {% if current_activities %}
       {% include "attese/partials/activity_links.html" %}
     {% else %}
-      <p class="text-muted mb-0">Nessun dato disponibile.</p>
+      <p class="text-muted mb-0">{% translate "Nessun dato disponibile." %}</p>
     {% endif %}
   </div>
 </div>

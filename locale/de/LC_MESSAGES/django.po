@@ -1,0 +1,321 @@
+# Traduzione tedesca di Attese (terminologia in uso in Alto Adige/Südtirol).
+msgid ""
+msgstr ""
+"Project-Id-Version: attese\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-24 22:13+0100\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "statistiche/"
+msgstr "statistik/"
+
+msgid "prestazioni/"
+msgstr "leistungen/"
+
+msgid "prestazioni/<str:code>/"
+msgstr "leistungen/<str:code>/"
+
+msgid "prestazioni/<str:code>/<slug:slug>/"
+msgstr "leistungen/<str:code>/<slug:slug>/"
+
+#, python-format
+msgid "%(nome)s: tempi di attesa in Alto Adige"
+msgstr "%(nome)s: Wartezeiten in Südtirol"
+
+#, python-format
+msgid "%(nome)s in Alto Adige: attesa minima %(giorni)s giorno (%(struttura)s, %(citta)s)."
+msgid_plural "%(nome)s in Alto Adige: attesa minima %(giorni)s giorni (%(struttura)s, %(citta)s)."
+msgstr[0] "%(nome)s in Südtirol: kürzeste Wartezeit %(giorni)s Tag (%(struttura)s, %(citta)s)."
+msgstr[1] "%(nome)s in Südtirol: kürzeste Wartezeit %(giorni)s Tage (%(struttura)s, %(citta)s)."
+
+#, python-format
+msgid "%(nome)s in Alto Adige."
+msgstr "%(nome)s in Südtirol."
+
+#, python-format
+msgid "Confronta i tempi di attesa in %(n)s struttura sanitaria, dati opendata del %(data)s."
+msgid_plural "Confronta i tempi di attesa in %(n)s strutture sanitarie, dati opendata del %(data)s."
+msgstr[0] "Wartezeiten in %(n)s Gesundheitseinrichtung, Open Data vom %(data)s."
+msgstr[1] "Wartezeiten in %(n)s Gesundheitseinrichtungen im Vergleich, Open Data vom %(data)s."
+
+#, python-format
+msgid "Attesa minima %(giorni)s giorno"
+msgid_plural "Attesa minima %(giorni)s giorni"
+msgstr[0] "Kürzeste Wartezeit %(giorni)s Tag"
+msgstr[1] "Kürzeste Wartezeit %(giorni)s Tage"
+
+#, python-format
+msgid "confronto tra %(n)s struttura in Alto Adige."
+msgid_plural "confronto tra %(n)s strutture in Alto Adige."
+msgstr[0] "%(n)s Einrichtung in Südtirol."
+msgstr[1] "%(n)s Einrichtungen in Südtirol im Vergleich."
+
+msgid "Prestazioni"
+msgstr "Leistungen"
+
+#, python-format
+msgid "Tempi di attesa per <strong>%(nome)s</strong> nelle strutture sanitarie dell'Alto Adige: l'attesa più breve è di <strong>%(giorni)s giorno</strong> presso %(struttura)s (%(citta)s)."
+msgid_plural "Tempi di attesa per <strong>%(nome)s</strong> nelle strutture sanitarie dell'Alto Adige: l'attesa più breve è di <strong>%(giorni)s giorni</strong> presso %(struttura)s (%(citta)s)."
+msgstr[0] "Wartezeiten für <strong>%(nome)s</strong> in den Gesundheitseinrichtungen Südtirols: Die kürzeste Wartezeit beträgt <strong>%(giorni)s Tag</strong> (%(struttura)s, %(citta)s)."
+msgstr[1] "Wartezeiten für <strong>%(nome)s</strong> in den Gesundheitseinrichtungen Südtirols: Die kürzeste Wartezeit beträgt <strong>%(giorni)s Tage</strong> (%(struttura)s, %(citta)s)."
+
+#, python-format
+msgid "Tempi di attesa per <strong>%(nome)s</strong> nelle strutture sanitarie dell'Alto Adige."
+msgstr "Wartezeiten für <strong>%(nome)s</strong> in den Gesundheitseinrichtungen Südtirols."
+
+msgid "Rilevazione"
+msgstr "Erhebung"
+
+msgid "Pubblicazione opendata"
+msgstr "Veröffentlichung Open Data"
+
+msgid "Andamento nel tempo"
+msgstr "Entwicklung im Zeitverlauf"
+
+msgid "Tutte le prestazioni"
+msgstr "Alle Leistungen"
+
+msgid "Progetto amatoriale senza garanzie: per prenotare contatta il CUP."
+msgstr "Privates Hobbyprojekt ohne Gewähr: Für Vormerkungen wenden Sie sich bitte an die Einheitliche Landesvormerkungsstelle (ELVS)."
+
+msgid "Azienda Sanitaria dell'Alto Adige"
+msgstr "Südtiroler Sanitätsbetrieb"
+
+msgid "Elenco prestazioni – Tempi di attesa sanitari in Alto Adige"
+msgstr "Alle Leistungen – Wartezeiten für Facharztvisiten in Südtirol"
+
+msgid "Elenco completo di visite ed esami specialistici con i tempi di attesa nelle strutture sanitarie dell'Alto Adige, dai dati opendata della Provincia di Bolzano."
+msgstr "Vollständige Liste der Facharztvisiten und Untersuchungen mit den Wartezeiten in den Gesundheitseinrichtungen Südtirols, aus den Open Data des Landes Südtirol."
+
+msgid "Elenco prestazioni – Tempi di attesa in Alto Adige"
+msgstr "Alle Leistungen – Wartezeiten in Südtirol"
+
+msgid "Visite ed esami monitorati dall'opendata dell'Alto Adige. Apri una prestazione per vedere i tempi di attesa in ogni struttura."
+msgstr "Visiten und Untersuchungen aus den Open Data des Landes Südtirol. Wählen Sie eine Leistung, um die Wartezeiten der einzelnen Einrichtungen zu sehen."
+
+msgid "Nessun dato disponibile."
+msgstr "Keine Daten verfügbar."
+
+msgid "Tempi di attesa sanitari in Alto Adige – visite ed esami"
+msgstr "Wartezeiten in Südtirol – Facharztvisiten und Untersuchungen"
+
+msgid "Tempi di attesa sanitari – Alto Adige"
+msgstr "Wartezeiten Gesundheit – Südtirol"
+
+msgid "Tempi di attesa sanitari in Alto Adige"
+msgstr "Wartezeiten für Facharztvisiten in Südtirol"
+
+msgid "Fonte"
+msgstr "Quelle"
+
+msgid "Open Data Alto Adige"
+msgstr "Open Data Südtirol"
+
+msgid "Seleziona una prestazione per vedere le prime date disponibili."
+msgstr "Wählen Sie eine Leistung, um die nächsten verfügbaren Termine zu sehen."
+
+msgid "Progetto amatoriale senza garanzie di correttezza o continuità del servizio. Per prenotazioni e informazioni certe contatta direttamente:"
+msgstr "Privates Hobbyprojekt ohne Gewähr für Richtigkeit und Verfügbarkeit. Für Vormerkungen und verbindliche Auskünfte wenden Sie sich bitte direkt an:"
+
+msgid "CUP"
+msgstr "ELVS"
+
+msgid "Codice sorgente"
+msgstr "Quellcode"
+
+msgid "Ultima rilevazione dati"
+msgstr "Letzte Datenerhebung"
+
+msgid "Ultimo aggiornamento opendata"
+msgstr "Letzte Aktualisierung der Open Data"
+
+msgid "Ultimo import"
+msgstr "Letzter Import"
+
+msgid "Filtri di ricerca"
+msgstr "Suchfilter"
+
+msgid "Tipo di prestazione"
+msgstr "Art der Leistung"
+
+msgid "— Seleziona una prestazione —"
+msgstr "— Leistung wählen —"
+
+msgid "Caricamento..."
+msgstr "Wird geladen …"
+
+msgid "Seleziona una prestazione per vedere le date disponibili."
+msgstr "Wählen Sie eine Leistung, um die verfügbaren Termine zu sehen."
+
+msgid "Media giorni di attesa"
+msgstr "Durchschnittliche Wartezeit in Tagen"
+
+msgid "Nessun dato disponibile per questa prestazione."
+msgstr "Keine Daten für diese Leistung verfügbar."
+
+msgid "Seleziona una prestazione per visualizzare il grafico."
+msgstr "Wählen Sie eine Leistung, um das Diagramm anzuzeigen."
+
+msgid "Pagina di questa prestazione (link da condividere)"
+msgstr "Seite dieser Leistung (Link zum Teilen)"
+
+msgid "Date disponibili più vicine"
+msgstr "Nächste verfügbare Termine"
+
+#, python-format
+msgid "%(n)s risultato"
+msgid_plural "%(n)s risultati"
+msgstr[0] "%(n)s Ergebnis"
+msgstr[1] "%(n)s Ergebnisse"
+
+msgid "Struttura"
+msgstr "Einrichtung"
+
+msgid "Reparto / Indirizzo"
+msgstr "Abteilung / Adresse"
+
+msgid "Giorni di attesa"
+msgstr "Wartetage"
+
+msgid "Data <b>STIMATA</b> disponibilità"
+msgstr "<b>VORAUSSICHTLICHER</b> Termin"
+
+msgid "Contatto"
+msgstr "Kontakt"
+
+msgctxt "giorni"
+msgid "gg"
+msgstr "Tg."
+
+msgid "data già passata"
+msgstr "Datum bereits vergangen"
+
+msgid "N/D"
+msgstr "k. A."
+
+msgid "La data stimata è calcolata come: data pubblicazione dati + giorni di attesa. Aggiornamento dati: quotidiano."
+msgstr "Der voraussichtliche Termin ergibt sich aus dem Veröffentlichungsdatum der Daten plus den Wartetagen. Aktualisierung der Daten: täglich."
+
+msgid "Nessun dato trovato per i filtri selezionati."
+msgstr "Keine Daten für die gewählten Filter gefunden."
+
+msgid "Nessun dato disponibile per questa combinazione."
+msgstr "Keine Daten für diese Kombination verfügbar."
+
+msgid "— Seleziona una struttura —"
+msgstr "— Einrichtung wählen —"
+
+msgid "Statistiche – Tempi di attesa Alto Adige"
+msgstr "Statistik – Wartezeiten Südtirol"
+
+msgid "Andamento nel tempo dei tempi di attesa medi per visite ed esami in Alto Adige, per prestazione e per struttura sanitaria."
+msgstr "Entwicklung der durchschnittlichen Wartezeiten für Visiten und Untersuchungen in Südtirol, nach Leistung und Gesundheitseinrichtung."
+
+msgid "Statistiche – Tempi di attesa in Alto Adige"
+msgstr "Statistik – Wartezeiten in Südtirol"
+
+msgid "Come cambiano nel tempo i tempi di attesa per visite ed esami in Alto Adige, per prestazione e per struttura."
+msgstr "So entwickeln sich die Wartezeiten für Visiten und Untersuchungen in Südtirol, nach Leistung und Einrichtung."
+
+msgid "Statistiche e variazioni nel tempo"
+msgstr "Statistik und Entwicklung im Zeitverlauf"
+
+msgid "Andamento dei tempi medi di attesa in base alle pubblicazioni opendata."
+msgstr "Entwicklung der durchschnittlichen Wartezeiten auf Grundlage der veröffentlichten Open Data."
+
+msgid "Torna alla ricerca"
+msgstr "Zurück zur Suche"
+
+msgid "Media globale giorni di attesa nel tempo"
+msgstr "Durchschnittliche Wartezeit insgesamt im Zeitverlauf"
+
+msgid "Dati insufficienti per il grafico."
+msgstr "Zu wenige Daten für das Diagramm."
+
+msgid "Media giorni di attesa per prestazione"
+msgstr "Durchschnittliche Wartezeit nach Leistung"
+
+msgid "Andamento tempo di attesa: prestazione in una struttura"
+msgstr "Entwicklung der Wartezeit: Leistung in einer Einrichtung"
+
+msgid "Prestazione"
+msgstr "Leistung"
+
+msgid "— Seleziona —"
+msgstr "— Wählen —"
+
+msgid "— Prima seleziona una prestazione —"
+msgstr "— Zuerst eine Leistung wählen —"
+
+msgid "Seleziona prestazione e struttura per visualizzare il grafico."
+msgstr "Wählen Sie Leistung und Einrichtung, um das Diagramm anzuzeigen."
+
+msgid "giorni"
+msgstr "Tage"
+
+msgid "Giorni medi di attesa"
+msgstr "Durchschnittliche Wartetage"
+
+msgid "Data pubblicazione opendata"
+msgstr "Veröffentlichungsdatum der Open Data"
+
+msgid "Media globale giorni di attesa"
+msgstr "Durchschnittliche Wartezeit insgesamt"
+
+msgid "Tempi di attesa per visite ed esami specialistici negli ospedali e nelle strutture sanitarie dell'Alto Adige, con le date disponibili più vicine. Dati opendata della Provincia di Bolzano aggiornati ogni giorno."
+msgstr "Wartezeiten für Facharztvisiten und Untersuchungen in den Krankenhäusern und Gesundheitseinrichtungen Südtirols, mit den nächsten verfügbaren Terminen. Open Data des Landes Südtirol, täglich aktualisiert."
+
+msgid "Visite ed esami specialistici in Alto Adige: tempi di attesa e date disponibili più vicine per struttura, da dati opendata."
+msgstr "Facharztvisiten und Untersuchungen in Südtirol: Wartezeiten und nächste verfügbare Termine nach Einrichtung, aus Open Data."
+
+msgid "Tempi di attesa sanitari in Alto Adige: visite ed esami specialistici"
+msgstr "Wartezeiten in Südtirol: Facharztvisiten und Untersuchungen"
+
+msgid "Statistiche"
+msgstr "Statistik"
+
+msgid "Lingua"
+msgstr "Sprache"
+
+msgid "Dati"
+msgstr "Daten"
+
+msgid "Licenza CC Zero"
+msgstr "Lizenz CC Zero"
+
+msgid "Progetto amatoriale senza garanzie. Per informazioni certe contatta"
+msgstr "Privates Hobbyprojekt ohne Gewähr. Verbindliche Auskünfte:"
+
+msgid "Un progetto"
+msgstr "Ein Projekt von"
+
+msgid "Altri progetti"
+msgstr "Weitere Projekte"
+
+msgid "qualità dell'aria"
+msgstr "Luftqualität"
+
+msgid "aprire file .p7m e fatture elettroniche"
+msgstr ".p7m-Dateien und elektronische Rechnungen öffnen"
+
+msgid "Condividi"
+msgstr "Teilen"
+
+msgid "Condividi con…"
+msgstr "Teilen mit …"
+
+msgid "Email"
+msgstr "E-Mail"
+
+msgid "Copia link"
+msgstr "Link kopieren"
+
+msgid "Link copiato."
+msgstr "Link kopiert."
+
+msgid "Copia non riuscita: copia l'indirizzo dalla barra del browser."
+msgstr "Kopieren fehlgeschlagen: Bitte die Adresse aus der Adresszeile des Browsers kopieren."

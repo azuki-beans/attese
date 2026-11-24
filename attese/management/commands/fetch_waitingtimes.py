@@ -54,26 +54,33 @@ def fetch_and_import(stdout=None):
         if publish_date and (latest_publish_date is None or publish_date > latest_publish_date):
             latest_publish_date = publish_date
 
-        structure = Structure.objects.filter(
-            description_it=item.get("structureDescriptionIt") or "",
-            address_name_it=item.get("addressNameIt") or "",
-            street_it=item.get("streetIt") or "",
-        ).first()
+        chiave = {
+            "description_it": item.get("structureDescriptionIt") or "",
+            "address_name_it": item.get("addressNameIt") or "",
+            "street_it": item.get("streetIt") or "",
+        }
+        altri = {
+            "description_de": item.get("structureDescriptionDe") or "",
+            "address_name_de": item.get("addressNameDe") or "",
+            "street_de": item.get("streetDe") or "",
+            "zip": item.get("zip") or "",
+            "city_it": item.get("cityIt") or "",
+            "city_de": item.get("cityDe") or "",
+            "phone": item.get("phone") or "",
+            "mail_it": item.get("mailIt") or "",
+            "mail_de": item.get("mailDe") or "",
+            "opening_hours_de": item.get("openinghoursDe") or "",
+        }
+        structure = Structure.objects.filter(**chiave).first()
         if not structure:
-            structure = Structure.objects.create(
-                description_it=item.get("structureDescriptionIt") or "",
-                description_de=item.get("structureDescriptionDe") or "",
-                address_name_it=item.get("addressNameIt") or "",
-                address_name_de=item.get("addressNameDe") or "",
-                street_it=item.get("streetIt") or "",
-                zip=item.get("zip") or "",
-                city_it=item.get("cityIt") or "",
-                city_de=item.get("cityDe") or "",
-                phone=item.get("phone") or "",
-                mail_it=item.get("mailIt") or "",
-                mail_de=item.get("mailDe") or "",
-                opening_hours_de=item.get("openingHoursDe") or "",
-            )
+            structure = Structure.objects.create(**chiave, **altri)
+        else:
+            # completa solo i campi ancora vuoti (es. aggiunti dopo il primo import)
+            mancanti = [campo for campo, valore in altri.items() if valore and not getattr(structure, campo)]
+            if mancanti:
+                for campo in mancanti:
+                    setattr(structure, campo, altri[campo])
+                structure.save(update_fields=mancanti)
 
         exists = WaitingRecord.objects.filter(
             survey_date=survey_date,
